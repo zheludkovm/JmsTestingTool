@@ -1,0 +1,7 @@
+(ns ru.jms.testingtool.prod
+  (:require [ru.jms.testingtool.core :as core]))
+
+;;ignore println statements in prod
+(set! *print-fn* (fn [& _]))
+
+(core/init!)

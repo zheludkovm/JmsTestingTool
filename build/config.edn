@@ -1,0 +1,31 @@
+{:connections [{:id                     :1
+                :title                  "local server"
+                :type                   :generic
+                :class                  "org.apache.activemq.ActiveMQConnectionFactory"
+                :constructor-parameters []
+                :init-calls             {"setBrokerURL" ["tcp://localhost:61616"]}
+                :queues                 [{:id    :1
+                                          :title "queue1"
+                                          :name  "queue1"}
+                                         {:id    :2
+                                          :title "queue2"
+                                          :name  "queue2"}]}
+               {:id                     :2
+                :title                  "connection2"
+                :type                   :generic
+                :class                  "org.apache.activemq.ActiveMQConnectionFactory"
+                :constructor-parameters []
+                :init-calls             {"setBrokerURL" ["tcp://localhost:61617"]}
+                :queues                 [{:id    "21"
+                                          :title "queue1"
+                                          :name  "queue1"}
+                                         ]}
+               ]
+ :collections [
+               {:id   "2"
+                :name "test collection"
+                }
+               {:id   "3"
+                :name "test collection2"
+                }
+               ]}

@@ -1,0 +1,53 @@
+.green {
+    color: green;
+}
+
+.blue {
+    color: blue;
+}
+
+.gray {
+    color: gray;
+}
+
+.tomato {
+    color: tomato ;
+}
+
+.lowerPosition {
+    position: absolute;
+    bottom:0;
+    right:0;
+}
+
+.rounded {
+border-radius: 5px;
+outline:0px !important;
+}
+
+.vert-align {
+    vertical-align: middle;
+     display:inline-block;
+}
+
+.btn {
+    margin: 2px;
+}
+
+.fontsize-lg {
+    font-size: 1.2em;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    /* Set the hr color */
+    color: #333; /* old IE */
+    background-color: #333; /* Modern Browsers */
+}
+
+.add-margin-right {
+  margin-right: 1em;
+  display: inline-block;
+  width: 4em;
+}
