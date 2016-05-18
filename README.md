@@ -7,3 +7,9 @@ This tool intended to work with JMS :
 - store persistent message collections
 
 - observe queue messages
+
+Screenshots :
+
+![Main window](/readme-ext/main-window.png?raw=true)
+
+![Edit message](/readme-ext/edit-message.png?raw=true)
