@@ -4,10 +4,11 @@
   (:import (java.net ConnectException)
            (java.io IOException)))
 
+(def ^:dynamic SENDER_UID :sente/all-users-without-uid)
 
-(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn
-              connected-uids]}
-      (sente/make-channel-socket! sente-web-server-adapter {})]
+
+(let [{:keys [ch-recv send-fn ajax-post-fn ajax-get-or-ws-handshake-fn connected-uids]}
+      (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn :client-id})]
   (def ring-ajax-post ajax-post-fn)
   (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
   (def ch-chsk ch-recv)                                     ; ChannelSocket's receive channel
@@ -17,9 +18,11 @@
 
 
 (defn make-dispatcher [dispatch-function]
-  (fn event-msg-handler* [{client-id :client-id id :id [_ command] :event, :as full-data}]
-    (if (some? command)
-      (dispatch-function command))))
+  (fn event-msg-handler* [{uid :uid client-id :client-id id :id [_ command] :event, :as full-data}]
+    (with-bindings {#'SENDER_UID uid}
+      (if (some? command)
+        (dispatch-function command)))))
+
 
 (defn init-sente-handler [dispatch-function]
   (let [handler (make-dispatcher dispatch-function)]
@@ -30,7 +33,7 @@
 (defmulti dispatch (fn [x] (x :direction)))
 
 (defmethod dispatch :client [command]
-  (chsk-send! :sente/all-users-without-uid [(:command command) command]))
+  (chsk-send! SENDER_UID [(:command command) command]))
 
 (defmethod dispatch :server [command]
   ;(println "processing command " command)
