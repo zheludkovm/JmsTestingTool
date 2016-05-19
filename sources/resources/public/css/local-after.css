@@ -51,3 +51,7 @@ hr {
   display: inline-block;
   width: 4em;
 }
+
+.right-group {
+  text-align: right;
+}

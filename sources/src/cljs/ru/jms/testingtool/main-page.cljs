@@ -235,18 +235,17 @@
          gray-block-button])]]))
 
 (defn show-pager []
-  [:div.container-fluid
-   [:div.row
-    [:div.col-xs-4
-     [:div.button-group
-      [make-simple-button "to start" "glyphicon-fast-backward" check-pager-backward? #(comm/exec-client :pager-action :action :pager-fast-backward) blue-button]
-      [make-simple-button "one page left" "glyphicon-backward" check-pager-backward? #(comm/exec-client :pager-action :action :pager-backward) blue-button]]]
-    [:div.col-xs-1
-     [:h4 (str (inc (:buffer-page @data/web-data)) "/" (data/total-buffer-pages))]]
-    [:div.col-xs-4
-     [:div.button-group
-      [make-simple-button "one page right" "glyphicon-forward" check-pager-forward? #(comm/exec-client :pager-action :action :pager-forward) blue-button]
-      [make-simple-button "to end" "glyphicon-fast-forward" check-pager-forward? #(comm/exec-client :pager-action :action :pager-fast-forward) blue-button]]]]])
+  [:div.row
+   [:div.col-xs-4.col-xs-offset-3
+    [:div.button-group
+     [make-simple-button "to start" "glyphicon-fast-backward" check-pager-backward? #(comm/exec-client :pager-action :action :pager-fast-backward) blue-button]
+     [make-simple-button "one page left" "glyphicon-backward" check-pager-backward? #(comm/exec-client :pager-action :action :pager-backward) blue-button]]]
+   [:div.col-xs-1
+    [:h4 (str (inc (:buffer-page @data/web-data)) "/" (data/total-buffer-pages))]]
+   [:div.col-xs-4
+    [:div.button-group.right-group
+     [make-simple-button "one page right" "glyphicon-forward" check-pager-forward? #(comm/exec-client :pager-action :action :pager-forward) blue-button]
+     [make-simple-button "to end" "glyphicon-fast-forward" check-pager-forward? #(comm/exec-client :pager-action :action :pager-fast-forward) blue-button]]]])
 
 (def buffer-buttons
   [:div.col-md-1
@@ -254,7 +253,8 @@
    [:br]
    [:br]
    [make-simple-button "To collection" "glyphicon-download-alt" check-selected-buffer-messages? comm/move-buffer-to-collection blue-button]
-   [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]])
+   [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]
+   ])
 
 (def collection-buttons
   [:div.col-md-1

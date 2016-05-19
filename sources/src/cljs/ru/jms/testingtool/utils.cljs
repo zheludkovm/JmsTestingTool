@@ -24,7 +24,6 @@
       [:span {:class (str "glyphicon " glyph)}])])
 
   ([text glyph on-click add-class]
-   (js-println "add button " text)
    (make-simple-button text glyph (constantly false) on-click add-class))
 
   ([text glyph on-click]

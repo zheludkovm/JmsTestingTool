@@ -10,22 +10,26 @@
                                          {:id    :2
                                           :title "queue2"
                                           :name  "queue2"}]}
-               {:id                     :2
-                :title                  "connection2"
+               {:id                     :3
+                :title                  "local stomp connection"
                 :type                   :generic
-                :class                  "org.apache.activemq.ActiveMQConnectionFactory"
+                :browse-type            :queue-consumer
+                :class                  "org.fusesource.stomp.jms.StompJmsConnectionFactory"
                 :constructor-parameters []
-                :init-calls             {"setBrokerURL" ["tcp://localhost:61617"]}
-                :queues                 [{:id    "21"
+                :init-calls             {"setBrokerURI" ["tcp://localhost:61603"]}
+                :queues                 [{:id    :3
                                           :title "queue1"
                                           :name  "queue1"}
+                                         {:id    :4
+                                          :title "queue2"
+                                          :name  "queue2"}
                                          ]}
                ]
  :collections [
                {:id   "2"
-                :name "test collection"
+                :name "Test adapter messages"
                 }
                {:id   "3"
-                :name "test collection2"
+                :name "Test processor messages"
                 }
                ]}

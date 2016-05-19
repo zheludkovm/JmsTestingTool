@@ -167,6 +167,7 @@
                         :collection-id (:selected-collection-id @data/web-data)}))
 
 (defn browse-queue []
+  (dispatch-log-entry "awaiting messages from queue")
   (dispatcher/dispatch {:direction     :server
                         :command       ::browse-queue
                         :connection-id (:selected-connection-id @data/web-data)
@@ -176,8 +177,7 @@
   (dispatcher/dispatch {:direction     :server
                         :command       ::purge-queue
                         :connection-id (:selected-connection-id @data/web-data)
-                        :queue-id      (:selected-queue-id @data/web-data)})
-  )
+                        :queue-id      (:selected-queue-id @data/web-data)}))
 
 (defn remove-selected-messages []
   (dispatcher/dispatch {:direction     :server

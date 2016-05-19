@@ -1,17 +1,21 @@
 (ns ru.jms.testingtool.mq
-  (:import (javax.jms QueueConnectionFactory Connection Session Queue MessageConsumer Message TextMessage QueueBrowser MessageProducer)
+  (:import (javax.jms QueueConnectionFactory Connection Session Queue MessageConsumer Message TextMessage QueueBrowser MessageProducer BytesMessage)
            (java.util Enumeration)
            (java.io IOException))
   (:use ru.jms.testingtool.mq-init))
 
-(defn ^Session get-session [connection-info]
-  (try
-    (let [^QueueConnectionFactory qcf (create-qcf connection-info)
-          ^Connection q (.createConnection qcf)
-          _ (.start q)]
-      (.createSession q false Session/AUTO_ACKNOWLEDGE))
-    (catch Exception e
-      (throw (IOException. e)))))
+(defn ^Session get-session
+  ([connection-info ack-mode]
+   (try
+     (let [^QueueConnectionFactory qcf (create-qcf connection-info)
+           ^Connection q (.createConnection qcf)
+           _ (.start q)]
+       (.createSession q false ack-mode))
+     (catch Exception e
+       (throw (IOException. e)))))
+  ([connection-info]
+   (get-session connection-info Session/AUTO_ACKNOWLEDGE)))
+
 
 (defn ^Queue get-queue [^Session s queue-info]
   (.createQueue s (:name queue-info)))
@@ -45,9 +49,22 @@
 (defn safe-to-str [val]
   (if (nil? val) nil (str val)))
 
-(defn convert-message [^TextMessage msg]
+(defn get-message-body [^Message msg]
+  (cond
+    (instance? TextMessage msg) (.getText msg)
+    (instance? BytesMessage msg) (let [^BytesMessage bytesMsg msg
+                                       len (.getBodyLength bytesMsg)
+                                       buffer (byte-array len)
+                                       _ (.readBytes bytesMsg buffer)]
+                                   (String. buffer "UTF-8")
+                                   )
+    :else (throw (IOException. (str "Not supported message class!" (.getClass msg))))
+    )
+  )
+
+(defn convert-message [^Message msg]
   (if (some? msg)
-    (let [^String text (.getText msg)
+    (let [^String text (get-message-body msg)
           ^String text2 (if (nil? text) "" text)
           text-len (.length text2)
           res {:id               (.getJMSMessageID msg)
@@ -103,6 +120,21 @@
     (.close s)
     msg))
 
+(defn get-all [^MessageConsumer consumer]
+  (->> (repeatedly #(.receive consumer 1000))
+       (take-while some?)))
+
+(defn consume-queue [connection-info queue-info]
+  (let [^Session s (get-session connection-info Session/CLIENT_ACKNOWLEDGE)
+        ^Queue q (get-queue s queue-info)
+        ^MessageConsumer consumer (.createConsumer s q)
+        messages (get-all consumer)
+        converted-messages (doall (map convert-message messages))]
+    (.close consumer)
+    (.close s)
+    (doall converted-messages)
+    ))
+
 (defn browse-queue [connection-info queue-info]
   (let [^Session s (get-session connection-info)
         ^Queue q (get-queue s queue-info)
@@ -127,16 +159,10 @@
     (.close producer)
     (.close s)))
 
-(defn get-all [^MessageConsumer consumer]
-  (let [^Message msg (.receive consumer 10)]
-    ;(println "message : " msg)
-    (if (some? msg)
-      (recur consumer))))
-
 (defn purge-queue [connection-info queue-info]
   (let [^Session s (get-session connection-info)
         ^Queue q (get-queue s queue-info)
         ^MessageConsumer consumer (.createConsumer s q)]
-    (get-all consumer)
+    (doall (get-all consumer))
     (.close consumer)
     (.close s)))

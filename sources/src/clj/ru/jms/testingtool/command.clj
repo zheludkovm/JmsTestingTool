@@ -43,9 +43,12 @@
            (dispatch-collection collection-id))))
 
 (defmethod dispatch-server ::browse-queue [command]
-  ;(println "receive command! " command)
   (let [[connection queue] (m/get-queue @data/config-data (:connection-id command) (:queue-id command))
-        messages (mq/browse-queue connection queue)]
+        browse-type (:browse-type connection)
+        messages (reverse (if (= browse-type :queue-consumer)
+                            (mq/consume-queue connection queue)
+                            (mq/browse-queue connection queue)
+                            ))]
     (dispatch (create-init-messages messages :buffer))
     (m/init-messages data/messages-data :buffer messages)))
 
@@ -59,7 +62,6 @@
         (dispatch (create-new-message-command msg collection-id))))))
 
 (defmethod dispatch-server ::remove-messages [command]
-  ;(println "remove-messages!!" command)
   (let [collection-id (:collection-id command)
         id-list (:id-list command)]
     (m/remove-messages data/messages-data collection-id id-list)

@@ -39,7 +39,13 @@
     (catch IOException e
       (dispatch {:direction :client :command (keyword "ru.jms.testingtool.command" "add-log-entry") :message "Can't connect to queue!" :level "alert-danger"})
       (throw e)
-      )))
+      )
+    (catch Exception e
+      (dispatch {:direction :client :command (keyword "ru.jms.testingtool.command" "add-log-entry") :message (str "Error during processing request! " (.getMessage e)) :level "alert-danger"})
+      (throw e)
+      )
+
+    ))
 
 (defmethod dispatch :client-and-server [command]
   ;(println "processing command " command)
