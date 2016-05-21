@@ -324,8 +324,7 @@
    [:h3.text-right " Log "]
    [:ul.list-unstyled
     (doall (for [item (:log-entries @data/web-data)]
-             (do (js-println " log item= " item)
-                 ^{:key (.getTime (:time item))}
+             (do ^{:key (.getTime (:time item))}
                  [:li.text-right.alert.alert-info {:class (:level item)}
                   [:small (str (:time item))]
                   [:span " "]
