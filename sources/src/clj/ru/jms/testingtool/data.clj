@@ -8,14 +8,14 @@
 
 (defrecord MessagesStoreType [store buffer]
   m/MessagesStore
-  (init-messages [this collection-id messages]
+  (init-messages! [this collection-id messages]
     (if (= collection-id :buffer)
       (reset! (:buffer this) messages)
       (e/swap! (:store this) assoc-in [collection-id] messages)))
-  (add-message [this collection-id message]
+  (add-message! [this collection-id message]
     (if (not= collection-id :buffer)
       (e/swap! (:store this) #(s/setval [(s/keypath collection-id) s/END] [message] %))))
-  (update-message [this collection-id message-id message]
+  (update-message! [this collection-id message-id message]
     (e/swap! (:store this) #(s/setval [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] message %)))
   (get-messages [this collection-id]
     (if (= collection-id :buffer)
@@ -29,7 +29,7 @@
     (if (= collection-id :buffer)
       (s/select-first [(cu/ALL-GET-BY-ID message-id)] @(:buffer this))
       (s/select-first [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] @(:store this))))
-  (remove-messages [this collection-id id-list]
+  (remove-messages! [this collection-id id-list]
     (if (not= collection-id :buffer)
       (let [store (:store this)
             messages (get @store collection-id)

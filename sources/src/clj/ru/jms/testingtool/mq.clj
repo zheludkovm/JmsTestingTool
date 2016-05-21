@@ -111,15 +111,6 @@
     (.setText mq-message (:long-title message))
     mq-message))
 
-(defn ^Message get-message [connection-info queue-info]
-  (let [^Session s (get-session connection-info)
-        ^Queue q (get-queue s queue-info)
-        ^MessageConsumer consumer (.createConsumer s q)
-        ^Message msg (.receive consumer 1000)]
-    (.close consumer)
-    (.close s)
-    msg))
-
 (defn get-all [^MessageConsumer consumer]
   (->> (repeatedly #(.receive consumer 1000))
        (take-while some?)))
@@ -149,7 +140,7 @@
     (.close s)
     converted-messages))
 
-(defn send-messages [connection-info queue-info messages]
+(defn send-messages! [connection-info queue-info messages]
   (let [^Session s (get-session connection-info)
         ^Queue q (get-queue s queue-info)
         ^MessageProducer producer (.createProducer s q)]
@@ -159,7 +150,7 @@
     (.close producer)
     (.close s)))
 
-(defn purge-queue [connection-info queue-info]
+(defn purge-queue! [connection-info queue-info]
   (let [^Session s (get-session connection-info)
         ^Queue q (get-queue s queue-info)
         ^MessageConsumer consumer (.createConsumer s q)]

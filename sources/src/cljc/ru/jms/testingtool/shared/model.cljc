@@ -4,13 +4,13 @@
 
 
 (defprotocol MessagesStore
-  (init-messages [this collection-id messages])
-  (add-message [this collection-id message])
-  (update-message [this collection-id message-id message])
+  (init-messages! [this collection-id messages])
+  (add-message! [this collection-id message])
+  (update-message! [this collection-id message-id message])
   (get-messages [this collection-id])
   (get-messages-list [this collection-id id-list])
   (get-message [this collection-id message-id])
-  (remove-messages [this collection-id id-list]))
+  (remove-messages! [this collection-id id-list]))
 
 (defprotocol ConfigStore
   (get-collections [this])

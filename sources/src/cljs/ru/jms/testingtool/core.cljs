@@ -6,6 +6,8 @@
             [goog.history.EventType :as EventType]
             [ru.jms.testingtool.main-page :refer [home-page]]
             [ru.jms.testingtool.utils :refer [js-println]]
+            [ru.jms.testingtool.dispatcher :as dispatcher]
+            [ru.jms.testingtool.command :as command]
             )
   (:import goog.History))
 
@@ -27,8 +29,12 @@
      :about-page about-page
      :no-connection-page no-connection-page)])
 
+(defn switch-page! [page]
+  (session/put! :current-page page))
+
 ;; -------------------------
 ;; Routes
+
 (secretary/set-config! :prefix "#")
 
 (secretary/defroute "/" []
@@ -48,16 +54,25 @@
         (secretary/dispatch! (.-token event))))
     (.setEnabled true)))
 
+(defn init-sente []
+  (dispatcher/init-sente-client! #(do (switch-page! :home-page)
+                                      (command/send-init-request!))
+                                 #(switch-page! :no-connection-page)))
+
 ;; -------------------------
 ;; Initialize app
 (defn mount-root []
   (reagent/render [current-page] (.getElementById js/document "app")))
 
 (defn init! []
+  (init-sente)
   (hook-browser-navigation!)
   (mount-root))
 
-;methods to route
+
+;#(do (switch-page :home-page)
+;     (command/send-init-request))
+;#(switch-page :no-connection-page))
 
 
 

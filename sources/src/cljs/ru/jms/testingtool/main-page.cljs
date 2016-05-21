@@ -249,7 +249,7 @@
 
 (def buffer-buttons
   [:div.col-md-1
-   [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue blue-button]
+   [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue! blue-button]
    [:br]
    [:br]
    [make-simple-button "To collection" "glyphicon-download-alt" check-selected-buffer-messages? comm/move-buffer-to-collection blue-button]

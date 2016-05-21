@@ -7,14 +7,21 @@
             [prone.middleware :refer [wrap-exceptions]]
             [ring.middleware.reload :refer [wrap-reload]]
             [environ.core :refer [env]]
-            [clojure.core.async :as go]
-
-            [clojure.java.io :as io]
-            [clojure.data.json :as json]
             [taoensso.sente :as sente]
-            [ru.jms.testingtool.command :as command]
-            [ru.jms.testingtool.dispatcher :as sente-helper]
             [taoensso.sente.server-adapters.http-kit :refer (sente-web-server-adapter)]))
+
+(let [{:keys [ch-recv ajax-post-fn ajax-get-or-ws-handshake-fn]}
+      (sente/make-channel-socket! sente-web-server-adapter {:user-id-fn :client-id})]
+  (def ring-ajax-post ajax-post-fn)
+  (def ring-ajax-get-or-ws-handshake ajax-get-or-ws-handshake-fn)
+  (def ch-chsk ch-recv))
+
+(defn init-sente-handler [dispatch-function]
+  (sente/start-chsk-router! ch-chsk (fn event-msg-handler* [{send-fn     :send-fn
+                                                             uid         :uid
+                                                             [_ command] :event
+                                                             :as         full-data}]
+                                      (dispatch-function uid send-fn command))))
 
 (def home-page
   (html
@@ -37,8 +44,8 @@
       (include-js "js/app.js")]]))
 
 (defroutes routes
-           (GET "/chsk" req (sente-helper/ring-ajax-get-or-ws-handshake req))
-           (POST "/chsk" req (sente-helper/ring-ajax-post req))
+           (GET "/chsk" req (ring-ajax-get-or-ws-handshake req))
+           (POST "/chsk" req (ring-ajax-post req))
            (GET "/" [] home-page)
            (resources "/")
            (not-found "Not Found"))
@@ -52,3 +59,4 @@
                        wrap-exceptions
                        wrap-reload)
                    handler)))
+

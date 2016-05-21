@@ -1,17 +1,6 @@
 (ns ru.jms.testingtool.dispatcher
-  (:require-macros
-    [cljs.core.async.macros :as asyncm :refer (go go-loop)])
-  (:require [reagent.core :as reagent :refer [atom]]
-            [reagent.session :as session]
-            [ru.jms.testingtool.utils :refer [js-println xor-assoc switch-page]]
-            [ru.jms.testingtool.data :as data]
-
-            [cljs.core.async :as async :refer (<! >! put! chan)]
-            [taoensso.sente :as sente :refer (cb-success?)]
-            [taoensso.encore :as enc :refer (tracef debugf infof warnf errorf)]
-            )
-  )
-
+  (:require [ru.jms.testingtool.utils :refer [js-println]]
+            [taoensso.sente :as sente]))
 
 ; sente
 ;(sente/set-logging-level! :trace)
@@ -37,42 +26,26 @@
   (def chsk-state state)                                    ; Watchable, read-only atom
   )
 
-(defn init-sente-client [init-command dispatcher]
+(defmulti send-command! (fn [x] (x :direction)))
+(defmulti process-client-command (fn [x] (x :command)))
+
+(defmethod send-command! :server [command]
+  (chsk-send! [(:command command) command])
+  (js-println "send to server " command))
+
+(defmethod send-command! :client [command]
+  (js-println "processing command " command)
+  (process-client-command command))
+
+(defn init-sente-client! [f-init f-not-connected]
   (let [handler (fn [{[first second] :event}]
                   (if (= first :chsk/state)
                     (if (:open? second)
-                      (do
-                        (switch-page :home-page)
-                        (init-command)
-                        )
-                      (switch-page :no-connection-page)
-                      )
-                    )
+                      (f-init)
+                      (f-not-connected)))
 
                   (if (and (vector? second) (= first :chsk/recv))
                     (let [[_ command] second]
-                      (if (some? command) (dispatcher command)))
-                    )
-                  )]
-
+                      (if (some? command) (process-client-command command)))))]
     (sente/start-chsk-router! ch-chsk handler)))
-
-(defmulti dispatch (fn [x] (x :direction)))
-(defmulti dispatch-client (fn [x] (x :command)))
-
-(defmethod dispatch :server [command]
-  (chsk-send! [(:command command) command])
-  (js-println "send to server1 " command))
-
-(defmethod dispatch :client [command]
-  (js-println "processing command " command)
-  (dispatch-client command))
-
-(defmethod dispatch :client-and-server [command]
-  (js-println "processing command " command)
-  (chsk-send! [(:command command) command])
-  (dispatch-client command))
-
-
-
 

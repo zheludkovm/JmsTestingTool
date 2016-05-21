@@ -1,7 +1,6 @@
 (ns ru.jms.testingtool.utils
   (:require-macros [reagent-forms.macros :refer [render-element]])
-  (:require [reagent.session :as session]
-            [reagent-forms.core :as forms-core]
+  (:require [reagent-forms.core :as forms-core]
             [clojure.string :as str]))
 
 (defn xor-assoc [data key value]
@@ -57,9 +56,6 @@
 (defn js-is-checked [event]
   (-> event .-target .-checked))
 
-(defn switch-page [page]
-  (session/put! :current-page page))
-
 (defn with-index [coll]
   (map-indexed (fn [idx itm] [idx itm]) coll))
 
@@ -71,7 +67,6 @@
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
-
 (defmethod forms-core/init-field :input-validated
   [[type {:keys [id validate-func error-class] :as attrs}] {:keys [doc get save!]}]
   (render-element attrs doc
@@ -82,7 +77,6 @@
                              :class     (if (validate-func value) error-class "")
                              :on-change #(save! id (forms-core/value-of %))}
                             attrs)])))
-
 
 (defn to-zero [v]
   (if (< v 0) 0 v))
