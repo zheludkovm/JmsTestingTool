@@ -6,16 +6,12 @@
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.command :as comm]
             [reagent-forms.core :refer [bind-fields]]
-            [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero]]
+            [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero
+                                              switch-page!
+                                              gray-block-button blue-block-button blue-button danger-button danger-button-block]]
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
             [ru.jms.testingtool.shared.model :as m]))
-
-(def gray-block-button "btn btn-default btn-block")
-(def blue-block-button "btn btn-primary btn-block")
-(def blue-button "btn btn-primary")
-(def danger-button "btn btn-danger")
-(def danger-button-block "btn btn-danger btn-block")
 
 
 (defn check-queue-selection? []
@@ -36,10 +32,8 @@
 (defn check-pager-backward? []
   (= (:buffer-page @data/web-data) 0))
 
-(defn validate-header? [header]
-  (let [type (:type header)
-        value (:value header)
-        reg (case type
+(defn validate-header? [{type :type value :value}]
+  (let [reg (case type
               :string #".*"
               :long #"\d*"
               :int #"\d*"
@@ -47,8 +41,7 @@
               :double #"[0-9]{1,13}(\.[0-9]*)?"
               :float #"[0-9]{1,13}(\.[0-9]*)?"
               :boolean #"false|true|FALSE|TRUE"
-              #".*"
-              )]
+              #".*")]
     (or (empty? value) (not (re-matches reg value)))))
 
 (defn is-message-ok? []
@@ -175,7 +168,11 @@
                         [:li.list-group-item
                          {:on-click #(comm/exec-client :select-queue :queue-id queue-id :connection-id connection-id)
                           :class    (if (= queue-id (data/get-selected-queue-id)) "active" "")}
-                         [:span.disable-selection (:title queue)]]))]]))]])
+                         [:span.disable-selection (:title queue)]]))]]))]
+
+   ;[make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
+   ;                                                          (switch-page! :config-page)) blue-button]
+   ])
 
 (defn gen-property
   ([label value type]

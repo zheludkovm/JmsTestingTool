@@ -25,7 +25,7 @@
 
 (def config-data
   (reagent/atom
-    (m/create-config
+    (m/map->ConfigType
       {:connections []
        :collections []})))
 
@@ -51,7 +51,9 @@
                  ;collection
                  :expanded-collection-messages #{}
                  :checked-collections-messages #{}
-                 :collection-filter            ""}))
+                 :collection-filter            ""
+                 :edited-config                {}
+                 }))
 
 
 ;support web data functions
@@ -147,3 +149,8 @@
 (defn validate-current-page-number! []
   (let [page (:buffer-page @web-data)]
     (update-buffer-page-number! page)))
+
+; config edit
+
+(defn prepare-config-for-edit! []
+  (swap! web-data assoc :edited-config (into {} @config-data)))

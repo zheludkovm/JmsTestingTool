@@ -33,6 +33,3 @@
     (into {} this))
   (get-collection [this collection-id]
     (s/select-first [:collections (cu/ALL-GET-BY-ID collection-id)] this)))
-
-(defn create-config [data]
-  (ConfigType. (:connections data) (:collections data)))

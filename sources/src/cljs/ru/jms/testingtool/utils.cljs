@@ -1,7 +1,14 @@
 (ns ru.jms.testingtool.utils
   (:require-macros [reagent-forms.macros :refer [render-element]])
   (:require [reagent-forms.core :as forms-core]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [reagent.session :as session]))
+
+(def gray-block-button "btn btn-default btn-block")
+(def blue-block-button "btn btn-primary btn-block")
+(def blue-button "btn btn-primary")
+(def danger-button "btn btn-danger")
+(def danger-button-block "btn btn-danger btn-block")
 
 (defn xor-assoc [data key value]
   (swap! data assoc key (if (= (get @data key) value) nil value)))
@@ -80,3 +87,6 @@
 
 (defn to-zero [v]
   (if (< v 0) 0 v))
+
+(defn switch-page! [page]
+  (session/put! :current-page page))

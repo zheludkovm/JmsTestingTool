@@ -10,7 +10,7 @@
 ;process server commands
 
 (defmethod process-client-command ::init [{config :config}]
-  (reset! data/config-data (m/create-config config))
+  (reset! data/config-data (m/map->ConfigType config))
   (swap! data/web-data assoc
          :selected-collection-id (m/get-first-collection-id @data/config-data)
          :selected-connection-id nil

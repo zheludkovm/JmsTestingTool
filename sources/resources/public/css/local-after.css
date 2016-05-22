@@ -55,3 +55,8 @@ hr {
 .right-group {
   text-align: right;
 }
+
+.nomargin {
+  margin:0;
+  padding:0;
+}

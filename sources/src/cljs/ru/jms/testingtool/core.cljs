@@ -5,9 +5,11 @@
             [goog.events :as events]
             [goog.history.EventType :as EventType]
             [ru.jms.testingtool.main-page :refer [home-page]]
-            [ru.jms.testingtool.utils :refer [js-println]]
+            [ru.jms.testingtool.utils :refer [js-println switch-page!]]
             [ru.jms.testingtool.dispatcher :as dispatcher]
             [ru.jms.testingtool.command :as command]
+            [ru.jms.testingtool.config-page :refer [config-page]]
+
             )
   (:import goog.History))
 
@@ -27,10 +29,9 @@
   [(case (session/get :current-page)
      :home-page home-page
      :about-page about-page
-     :no-connection-page no-connection-page)])
+     :no-connection-page no-connection-page
+     :config-page config-page)])
 
-(defn switch-page! [page]
-  (session/put! :current-page page))
 
 ;; -------------------------
 ;; Routes

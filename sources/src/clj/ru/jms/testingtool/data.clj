@@ -45,7 +45,7 @@
       read-string))
 
 (def config-data
-  (atom (m/create-config config)))
+  (atom (m/map->ConfigType config)))
 
 (def messages-data
   (MessagesStoreType. (e/file-atom {} "messages.clj" :pending-dir "tmp") (atom [])))
