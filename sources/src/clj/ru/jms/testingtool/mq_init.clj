@@ -1,13 +1,13 @@
 (ns ru.jms.testingtool.mq-init
-  (:import (clojure.lang Reflector)))
+  (:import (clojure.lang Reflector))
+  (:use ru.jms.testingtool.shared.mq_providers)
+  )
 
-(defmulti create-qcf (fn [x] (x :type)))
 
-(defmethod create-qcf :generic [connection-info]
+(defn create-manual-qcf [{class :class constructor-parameters :constructor-parameters init-calls :init-calls}]
   (let [qcf (Reflector/invokeConstructor
-              (resolve (symbol (:class connection-info)))
-              (to-array (:constructor-parameters connection-info)))
-        init-calls (:init-calls connection-info)]
+              (resolve (symbol class))
+              (to-array constructor-parameters))]
     (doall (for [[method-name params] init-calls]
              (Reflector/invokeInstanceMethod
                qcf
@@ -15,3 +15,11 @@
                (to-array params))
              ))
     qcf))
+
+(defn create-qcf [connection-info]
+  (let [type-fn (:type connection-info)
+        init-fn (-> providers
+                    type-fn
+                    :init-fn)]
+    (create-manual-qcf (init-fn connection-info))))
+

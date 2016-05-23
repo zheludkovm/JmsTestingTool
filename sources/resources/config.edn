@@ -1,5 +1,5 @@
 {:connections [{:id                     :1
-                :title                  "local server"
+                :title                  "generic"
                 :type                   :generic
                 :class                  "org.apache.activemq.ActiveMQConnectionFactory"
                 :constructor-parameters []
@@ -11,12 +11,11 @@
                                           :title "queue2"
                                           :name  "queue2"}]}
                {:id                     :3
-                :title                  "local stomp connection"
-                :type                   :generic
+                :title                  "stomp"
+                :type                   :stomp
                 :browse-type            :queue-consumer
-                :class                  "org.fusesource.stomp.jms.StompJmsConnectionFactory"
-                :constructor-parameters []
-                :init-calls             {"setBrokerURI" ["tcp://localhost:61603"]}
+                :host                   "localhost"
+                :port                   "61613"
                 :queues                 [{:id    :3
                                           :title "queue1"
                                           :name  "queue1"}
@@ -24,6 +23,17 @@
                                           :title "queue2"
                                           :name  "queue2"}
                                          ]}
+               {:id                     :5
+                :title                  "activemq"
+                :type                   :activemq
+                :host                   "localhost"
+                :port                   "61616"
+                :queues                 [{:id    :5
+                                          :title "queue1"
+                                          :name  "queue1"}
+                                         {:id    :6
+                                          :title "queue2"
+                                          :name  "queue2"}]}
                ]
  :collections [
                {:id   "2"
