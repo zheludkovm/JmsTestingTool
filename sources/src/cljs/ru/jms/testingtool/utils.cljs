@@ -90,3 +90,6 @@
 
 (defn switch-page! [page]
   (session/put! :current-page page))
+
+(defn gen-id []
+  (.getTime (js/Date.)))

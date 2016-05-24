@@ -11,8 +11,8 @@
             [ru.jms.testingtool.timer :as timer]
             [ru.jms.testingtool.shared.model :as m]))
 
-(defn has-edited-connection []
-  (nil? (data/get-edited-connection-id)))
+(defn not-editing-connection? []
+  (nil? (data/get-edited-connection-idx)))
 
 (defn add-collections-list []
   [:div.form-horizontal
@@ -24,7 +24,7 @@
        [:div.col-xs-4.nomargin
         [:input.form-control {:field :input-validated :id :name :validate-func empty? :error-class "alert-danger"}]]
        [:div.col-md-5
-        [make-simple-button "Remove property" "glyphicon-minus" #(comm/exec-client :remove-message-header :idx idx) danger-button]]]
+        [make-simple-button "Remove property" "glyphicon-minus" #(comm/exec-client :remove-collection :idx idx) danger-button]]]
       collection-cursor])])
 
 
@@ -32,16 +32,30 @@
   [:div.container.col-md-2.nomargin
    [:div.h4 "Connections:"]
    [:ul.list-unstyled
-    (doall (for [connection (get-in @data/web-data [:edited-config :connections])
-                 :let [connection-id (:id connection)]]
-             ^{:key connection-id}
+    (doall (for [[idx connection] (with-index (get-in @data/web-data [:edited-config :connections]))]
+             ^{:key idx}
              [:li.list-group-item
-              {:on-click #(comm/exec-client :select-edited-connection :connection-id connection-id)
-               :class    (if (= connection-id (data/get-edited-connection-id)) "active" "")}
+              {:on-click #(comm/exec-client :select-edited-connection :idx idx)
+               :class    (if (= idx (data/get-edited-connection-idx)) "active" "")}
               [:span.disable-selection (:title connection)]]))]
    [make-simple-button "+" "glyphicon-plus" #(comm/exec-client :add-new-connection) blue-button]
-   [make-simple-button "-" "glyphicon-minus" has-edited-connection #(comm/exec-client :remove-selected-connection) danger-button]
+   [make-simple-button "-" "glyphicon-minus" not-editing-connection? #(comm/exec-client :remove-selected-connection) danger-button]
    ]
+  )
+
+(defn add-edit-fields []
+  (let [connection-cursor (ratom/cursor data/web-data [:edited-config :connections (:edited-connection-idx @data/web-data)])]
+    (js-println (:title @connection-cursor))
+    [bind-fields
+     [:div.container.col-md-9
+      [:div.row.h4 "Details"]
+      [:div.row (row "Title" [:input.form-control {:field :text :id :title}])]
+      [:div.row "proeprty"]
+      [:div.row [:hr]]
+      [:div.row.h4 "Queues:"]
+      [:div.row "queue1"]
+      [:div.row "qeueu2"]
+      ] connection-cursor])
   )
 
 (defn config-page []
@@ -53,16 +67,12 @@
      [:div.row
       (add-connections-list)
       [:div.col-md-1]
-      [:div.container.col-md-9
-       [:div.row.h4 "Details"]
-       (if (has-edited-connection)
-         [[:div.row "Title"]
-          [:div.row "proeprty"]
-          [:div.row [:hr]]
-          [:div.row.h4 "Queues:"]
-          [:div.row "queue1"]
-          [:div.row "qeueu2"]])
-       ]]
+      (if (not-editing-connection?)
+        [:div.container.col-md-9
+         [:div.row.h4 "Details"]]
+        (add-edit-fields)
+        )
+      ]
      [:div.row
       [:hr]]
      [:div.row
@@ -70,7 +80,7 @@
        [:div.row.h4 "Collections:"]
        [add-collections-list]
        [:div.row
-        [make-simple-button "+" "glyphicon-plus" #(js-println "Ok!") blue-button]]
+        [make-simple-button "+" "glyphicon-plus" #(comm/exec-client :add-collection) blue-button]]
        ]
       ]
      ]

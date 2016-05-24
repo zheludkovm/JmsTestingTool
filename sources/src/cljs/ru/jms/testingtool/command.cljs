@@ -1,5 +1,5 @@
 (ns ru.jms.testingtool.command
-  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove]]
+  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id]]
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
             [ru.jms.testingtool.shared.model :as m]))
@@ -97,13 +97,28 @@
     (data/update-buffer-page-number! page)))
 
 ;edit config commands
-(defmethod process-client-command ::select-edited-connection [{connection-id :connection-id}]
-  (xor-assoc data/web-data :edited-connection-id connection-id))
+(defmethod process-client-command ::select-edited-connection [{idx :idx}]
+  (xor-assoc data/web-data :edited-connection-idx idx))
 
 (defmethod process-client-command ::add-new-connection [_]
-  (let [count (count (get-in @data/web-data [:edited-config :connections]))
-        name (str "new connection " count)]
-    (swap! data/web-data assoc-in [:edited-config :connections count] {:id name :title name})))
+  (let [count (count (get-in @data/web-data [:edited-config :connections]))]
+    (swap! data/web-data assoc-in [:edited-config :connections count] {:id (gen-id) :title "new connection"})))
+
+(defmethod process-client-command ::remove-selected-connection []
+  (let [idx (:edited-connection-idx @data/web-data)
+        filtered-connections (vec-remove (get-in @data/web-data [:edited-config :connections]) idx)]
+    (swap! data/web-data assoc-in [:edited-config :connections] filtered-connections)
+    (swap! data/web-data assoc-in [:edited-connection-id] nil)
+    ))
+
+(defmethod process-client-command ::add-collection [_]
+  (let [count (count (get-in @data/web-data [:edited-config :collections]))]
+    (swap! data/web-data assoc-in [:edited-config :collections count] {:id (gen-id) :title "new collection"})))
+
+(defmethod process-client-command ::remove-collection [{idx :idx}]
+  (let [collections (get-in @data/web-data [:edited-config :collections])
+        filtered-collections (vec-remove collections idx)]
+    (swap! data/web-data assoc-in [:edited-config :collections] filtered-collections)))
 
 ;------------------------
 ;gen commands

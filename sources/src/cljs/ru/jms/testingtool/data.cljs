@@ -62,8 +62,8 @@
 (defn get-selected-queue-id []
   (:selected-queue-id @web-data))
 
-(defn get-edited-connection-id []
-  (:edited-connection-id @web-data))
+(defn get-edited-connection-idx []
+  (:edited-connection-idx @web-data))
 
 (defn get-selected-collection-id []
   (if-let [id (:selected-collection-id @web-data)]
