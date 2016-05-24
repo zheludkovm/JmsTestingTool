@@ -96,6 +96,15 @@
                :pager-fast-backward 0)]
     (data/update-buffer-page-number! page)))
 
+;edit config commands
+(defmethod process-client-command ::select-edited-connection [{connection-id :connection-id}]
+  (xor-assoc data/web-data :edited-connection-id connection-id))
+
+(defmethod process-client-command ::add-new-connection [_]
+  (let [count (count (get-in @data/web-data [:edited-config :connections]))
+        name (str "new connection " count)]
+    (swap! data/web-data assoc-in [:edited-config :connections count] {:id name :title name})))
+
 ;------------------------
 ;gen commands
 

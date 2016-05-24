@@ -52,13 +52,18 @@
                  :expanded-collection-messages #{}
                  :checked-collections-messages #{}
                  :collection-filter            ""
+                 ;edited config
                  :edited-config                {}
+                 :edited-connection-id         nil
                  }))
 
 
 ;support web data functions
 (defn get-selected-queue-id []
   (:selected-queue-id @web-data))
+
+(defn get-edited-connection-id []
+  (:edited-connection-id @web-data))
 
 (defn get-selected-collection-id []
   (if-let [id (:selected-collection-id @web-data)]

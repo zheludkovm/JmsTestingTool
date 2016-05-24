@@ -170,8 +170,8 @@
                           :class    (if (= queue-id (data/get-selected-queue-id)) "active" "")}
                          [:span.disable-selection (:title queue)]]))]]))]
 
-   ;[make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
-   ;                                                          (switch-page! :config-page)) blue-button]
+   [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
+                                                             (switch-page! :config-page)) blue-button]
    ])
 
 (defn gen-property

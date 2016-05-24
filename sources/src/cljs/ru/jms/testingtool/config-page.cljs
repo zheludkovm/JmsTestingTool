@@ -11,6 +11,9 @@
             [ru.jms.testingtool.timer :as timer]
             [ru.jms.testingtool.shared.model :as m]))
 
+(defn has-edited-connection []
+  (nil? (data/get-edited-connection-id)))
+
 (defn add-collections-list []
   [:div.form-horizontal
    (for [idx (indexes (:collections (:edited-config @data/web-data)))
@@ -24,19 +27,21 @@
         [make-simple-button "Remove property" "glyphicon-minus" #(comm/exec-client :remove-message-header :idx idx) danger-button]]]
       collection-cursor])])
 
-(defn calc-template []
-  (doall (for [connection (:connections (:edited-config @data/web-data))]
-           [:div.list-group-item {:key (:id connection)} (:title connection)]
-           ))
-  )
 
-(defn add-connections-list [ template]
-  (js-println "print connections!" template)
-  [bind-fields
-    [:div.list-group {:field :single-select :id :selected-edited-connection-id}
-     template
-     ]
-    data/web-data]
+(defn add-connections-list []
+  [:div.container.col-md-2.nomargin
+   [:div.h4 "Connections:"]
+   [:ul.list-unstyled
+    (doall (for [connection (get-in @data/web-data [:edited-config :connections])
+                 :let [connection-id (:id connection)]]
+             ^{:key connection-id}
+             [:li.list-group-item
+              {:on-click #(comm/exec-client :select-edited-connection :connection-id connection-id)
+               :class    (if (= connection-id (data/get-edited-connection-id)) "active" "")}
+              [:span.disable-selection (:title connection)]]))]
+   [make-simple-button "+" "glyphicon-plus" #(comm/exec-client :add-new-connection) blue-button]
+   [make-simple-button "-" "glyphicon-minus" has-edited-connection #(comm/exec-client :remove-selected-connection) danger-button]
+   ]
   )
 
 (defn config-page []
@@ -46,23 +51,17 @@
    [:div.row
     [:div.container.col-md-11
      [:div.row
-      [:div.container.col-md-2.nomargin
-       [:div.h4 "Connections:"]
-       [add-connections-list (calc-template)]
-       [make-simple-button "+" "glyphicon-plus" #(let [count (count (get-in @data/web-data [:edited-config :connections]))]
-                                                  (swap! data/web-data assoc-in [:edited-config :connections count] {:title "new connection"}))
-
-        blue-button]
-       ]
+      (add-connections-list)
       [:div.col-md-1]
       [:div.container.col-md-9
        [:div.row.h4 "Details"]
-       [:div.row "Title"]
-       [:div.row "proeprty"]
-       [:div.row [:hr]]
-       [:div.row.h4 "Queues:"]
-       [:div.row "queue1"]
-       [:div.row "qeueu2"]
+       (if (has-edited-connection)
+         [[:div.row "Title"]
+          [:div.row "proeprty"]
+          [:div.row [:hr]]
+          [:div.row.h4 "Queues:"]
+          [:div.row "queue1"]
+          [:div.row "qeueu2"]])
        ]]
      [:div.row
       [:hr]]
