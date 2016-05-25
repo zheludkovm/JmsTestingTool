@@ -30,9 +30,11 @@
       [:meta {:charset "utf-8"}]
       [:meta {:name    "viewport"
               :content "width=device-width, initial-scale=1"}]
+      [:link {:href "css/color-brewer.min.css" :rel "stylesheet"}]
       [:link {:href "css/local.css" :rel "stylesheet"}]
       [:link {:href "css/bootstrap.min.css" :rel "stylesheet"}]
-      [:link {:href "css/local-after.css" :rel "stylesheet"}]]
+      [:link {:href "css/local-after.css" :rel "stylesheet"}]
+      ]
      [:body
       (include-js "js/jquery-2.1.1.min.js")
       (include-js "js/bootstrap.min.js")

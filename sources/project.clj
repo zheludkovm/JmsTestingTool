@@ -27,6 +27,7 @@
                  [alandipert/enduro "1.2.0"]
                  [org.apache.activemq/activemq-client "5.13.2"]
                  [org.fusesource.stompjms/stompjms-client "1.19"]
+                 [json-html "0.3.5"]
                  ]
 
   :plugins [[lein-environ "1.0.0"]

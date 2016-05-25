@@ -85,6 +85,10 @@
 
 (defn add-edit-properties []
   [:div.form-horizontal
+   [:div.form-group
+    [:div.col-md-3 "property"]
+    [:div.col-md-3 "value"]]
+
    (for [idx (indexes (:headers (:edited-message @data/web-data)))
          :let [hdr-cursor (ratom/cursor data/web-data [:edited-message :headers idx])]]
      ^{:key (str "edit" idx)}

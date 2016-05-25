@@ -98,7 +98,7 @@
 
 ;edit config commands
 (defmethod process-client-command ::select-edited-connection [{idx :idx}]
-  (xor-assoc data/web-data :edited-connection-idx idx))
+  (swap! data/web-data assoc :edited-connection-idx idx))
 
 (defmethod process-client-command ::add-new-connection [_]
   (let [count (count (get-in @data/web-data [:edited-config :connections]))]
@@ -108,7 +108,7 @@
   (let [idx (:edited-connection-idx @data/web-data)
         filtered-connections (vec-remove (get-in @data/web-data [:edited-config :connections]) idx)]
     (swap! data/web-data assoc-in [:edited-config :connections] filtered-connections)
-    (swap! data/web-data assoc-in [:edited-connection-id] nil)
+    (swap! data/web-data assoc-in [:edited-connection-idx] nil)
     ))
 
 (defmethod process-client-command ::add-collection [_]
