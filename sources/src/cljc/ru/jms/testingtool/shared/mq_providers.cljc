@@ -4,11 +4,13 @@
 (def providers
   {:generic  {:title   "Generic"
               :comment "Generic provider, please manually edit config"
+              :browse-type :any
               :fields  []
               :init-fn identity}
 
    :activemq {:title   "ActiveMQ"
               :comment "ActiveMQ provider"
+              :browse-type :browser
               :fields  [{:name "host" :field :host :type :string :not-null true}
                         {:name "port" :field :port :type :int :not-null true}]
               :init-fn (fn [{host :host port :port}]
@@ -18,6 +20,7 @@
 
    :stomp    {:title   "Stomp"
               :comment "Fuse jms stomp provider"
+              :browse-type :consumer
               :fields  [{:name "host" :field :host :type :string :not-null true}
                         {:name "port" :field :port :type :int :not-null true}]
               :init-fn (fn [{host :host port :port}]

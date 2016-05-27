@@ -58,9 +58,7 @@
                                        _ (.readBytes bytesMsg buffer)]
                                    (String. buffer "UTF-8")
                                    )
-    :else (throw (IOException. (str "Not supported message class!" (.getClass msg))))
-    )
-  )
+    :else (throw (IOException. (str "Not supported message class!" (.getClass msg))))))
 
 (defn convert-message [^Message msg]
   (if (some? msg)
@@ -123,8 +121,7 @@
         converted-messages (doall (map convert-message messages))]
     (.close consumer)
     (.close s)
-    (doall converted-messages)
-    ))
+    (doall converted-messages)))
 
 (defn browse-queue [connection-info queue-info]
   (let [^Session s (get-session connection-info)
@@ -134,11 +131,19 @@
         messages (enumeration-seq msgs-e)
         converted-messages (doall (for [msg messages]
                                     (convert-message msg)
-                                    ))
-        ]
+                                    ))]
     (.close browser)
     (.close s)
     converted-messages))
+
+(defn browse-queue-messages [connection-info queue-info]
+  (let [provider-browse-type (get-connection-info-field connection-info :browse-type)
+        connection-browse-type (:browse-type connection-info)]
+    (if (or (= provider-browse-type :consumer)
+            (and (= provider-browse-type :any)
+                 (= connection-browse-type :consumer)))
+      (consume-queue connection-info queue-info)
+      (browse-queue connection-info queue-info))))
 
 (defn send-messages! [connection-info queue-info messages]
   (let [^Session s (get-session connection-info)

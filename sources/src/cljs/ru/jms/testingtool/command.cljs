@@ -108,8 +108,20 @@
   (let [idx (:edited-connection-idx @data/web-data)
         filtered-connections (vec-remove (get-in @data/web-data [:edited-config :connections]) idx)]
     (swap! data/web-data assoc-in [:edited-config :connections] filtered-connections)
-    (swap! data/web-data assoc-in [:edited-connection-idx] nil)
-    ))
+    (swap! data/web-data assoc-in [:edited-connection-idx] nil)))
+
+(defmethod process-client-command ::add-new-queue [_]
+  (let [idx (:edited-connection-idx @data/web-data)
+        count (count (get-in @data/web-data [:edited-config :connections idx :queues]))]
+    (swap! data/web-data assoc-in [:edited-config :connections idx :queues count] {:id (gen-id) :title "new queue" :name "new queue"})))
+
+(defmethod process-client-command ::remove-edited-queue [{idx :idx}]
+  (let [connection-idx (:edited-connection-idx @data/web-data)
+        queues (get-in @data/web-data [:edited-config :connections connection-idx :queues])
+        filtered-queues (vec-remove queues idx)]
+    (swap! data/web-data assoc-in [:edited-config :connections connection-idx :queues] filtered-queues)))
+
+
 
 (defmethod process-client-command ::add-collection [_]
   (let [count (count (get-in @data/web-data [:edited-config :collections]))]
@@ -119,6 +131,10 @@
   (let [collections (get-in @data/web-data [:edited-config :collections])
         filtered-collections (vec-remove collections idx)]
     (swap! data/web-data assoc-in [:edited-config :collections] filtered-collections)))
+
+
+
+
 
 ;------------------------
 ;gen commands

@@ -1,6 +1,7 @@
 {:connections [{:id                     :1
                 :title                  "generic"
                 :type                   :generic
+                :browse-type            :browser
                 :class                  "org.apache.activemq.ActiveMQConnectionFactory"
                 :constructor-parameters []
                 :init-calls             {"setBrokerURL" ["tcp://localhost:61616"]}
@@ -13,9 +14,8 @@
                {:id                     :3
                 :title                  "stomp"
                 :type                   :stomp
-                :browse-type            :queue-consumer
                 :host                   "localhost"
-                :port                   "61613"
+                :port                   "61603"
                 :queues                 [{:id    :3
                                           :title "queue1"
                                           :name  "queue1"}

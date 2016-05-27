@@ -16,10 +16,13 @@
              ))
     qcf))
 
+(defn get-connection-info-field [connection-info field]
+  (let [type (:type connection-info)]
+    (-> providers
+        type
+        field)))
+
 (defn create-qcf [connection-info]
-  (let [type-fn (:type connection-info)
-        init-fn (-> providers
-                    type-fn
-                    :init-fn)]
+  (let [init-fn (get-connection-info-field connection-info :init-fn)]
     (create-manual-qcf (init-fn connection-info))))
 

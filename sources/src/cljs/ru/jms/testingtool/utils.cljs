@@ -93,3 +93,16 @@
 
 (defn gen-id []
   (.getTime (js/Date.)))
+
+(defn validate-func [type not-null?]
+  (fn [value]
+    (let [reg (case type
+                :string #".*"
+                :long #"\d*"
+                :int #"\d*"
+                :short #"\d*"
+                :double #"[0-9]{1,13}(\.[0-9]*)?"
+                :float #"[0-9]{1,13}(\.[0-9]*)?"
+                :boolean #"false|true|FALSE|TRUE"
+                #".*")]
+      (or (and not-null? (empty? value)) (not (re-matches reg value))))))

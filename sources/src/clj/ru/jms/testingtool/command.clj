@@ -42,10 +42,7 @@
 
 (defmethod process-server-command ::browse-queue [command]
   (let [[connection queue] (get-queue-and-connection command)
-        browse-type (:browse-type connection)
-        messages (reverse (if (= browse-type :queue-consumer)
-                            (mq/consume-queue connection queue)
-                            (mq/browse-queue connection queue)))]
+        messages (mq/browse-queue-messages connection queue)]
     (send-command! (create-init-messages-command messages :buffer))
     (m/init-messages! data/messages-data :buffer messages)))
 

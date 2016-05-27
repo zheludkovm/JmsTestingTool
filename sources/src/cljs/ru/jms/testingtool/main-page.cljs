@@ -6,7 +6,7 @@
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.command :as comm]
             [reagent-forms.core :refer [bind-fields]]
-            [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero
+            [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero validate-func
                                               switch-page!
                                               gray-block-button blue-block-button blue-button danger-button danger-button-block]]
             [reagent-modals.modals :as reagent-modals]
@@ -33,16 +33,7 @@
   (= (:buffer-page @data/web-data) 0))
 
 (defn validate-header? [{type :type value :value}]
-  (let [reg (case type
-              :string #".*"
-              :long #"\d*"
-              :int #"\d*"
-              :short #"\d*"
-              :double #"[0-9]{1,13}(\.[0-9]*)?"
-              :float #"[0-9]{1,13}(\.[0-9]*)?"
-              :boolean #"false|true|FALSE|TRUE"
-              #".*")]
-    (or (empty? value) (not (re-matches reg value)))))
+  ((validate-func type true) value))
 
 (defn is-message-ok? []
   (let [msg (:edited-message @data/web-data)]
