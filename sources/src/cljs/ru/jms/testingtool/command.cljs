@@ -102,7 +102,7 @@
 
 (defmethod process-client-command ::add-new-connection [_]
   (let [count (count (get-in @data/web-data [:edited-config :connections]))]
-    (swap! data/web-data assoc-in [:edited-config :connections count] {:id (gen-id) :title "new connection"})))
+    (swap! data/web-data assoc-in [:edited-config :connections count] {:id (gen-id) :type :activemq :title "new connection" :browse-type :browser :queues []})))
 
 (defmethod process-client-command ::remove-selected-connection []
   (let [idx (:edited-connection-idx @data/web-data)
@@ -121,19 +121,14 @@
         filtered-queues (vec-remove queues idx)]
     (swap! data/web-data assoc-in [:edited-config :connections connection-idx :queues] filtered-queues)))
 
-
-
 (defmethod process-client-command ::add-collection [_]
   (let [count (count (get-in @data/web-data [:edited-config :collections]))]
-    (swap! data/web-data assoc-in [:edited-config :collections count] {:id (gen-id) :title "new collection"})))
+    (swap! data/web-data assoc-in [:edited-config :collections count] {:id (gen-id) :name "new collection"})))
 
 (defmethod process-client-command ::remove-collection [{idx :idx}]
   (let [collections (get-in @data/web-data [:edited-config :collections])
         filtered-collections (vec-remove collections idx)]
     (swap! data/web-data assoc-in [:edited-config :collections] filtered-collections)))
-
-
-
 
 
 ;------------------------
@@ -186,6 +181,11 @@
                   :command       ::move-buffer-to-collection
                   :id-list       (:checked-buffer-messages @data/web-data)
                   :collection-id (:selected-collection-id @data/web-data)}))
+
+(defn save-config! []
+  (send-command! {:direction :server
+                  :command   ::save-config
+                  :config    (:edited-config @data/web-data)}))
 
 (defn exec-client [command & params]
   (send-command! (into {:direction :client

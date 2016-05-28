@@ -39,13 +39,20 @@
 
 (def config
   (-> "config.edn"
-      io/resource
+      ;io/resource
       io/file
       slurp
       read-string))
 
 (def config-data
   (atom (m/map->ConfigType config)))
+
+(defn update-config! [config]
+  (let [writer (clojure.java.io/writer "config.edn")]
+    (clojure.pprint/pprint config writer)
+    (.close writer)
+    )
+  (reset! config-data (m/map->ConfigType config)))
 
 (def messages-data
   (MessagesStoreType. (e/file-atom {} "messages.clj" :pending-dir "tmp") (atom [])))

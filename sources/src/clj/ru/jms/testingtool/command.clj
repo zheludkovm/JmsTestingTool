@@ -70,7 +70,7 @@
   ;(println "default command! " command)
   )
 
-(defmethod process-server-command ::save-or-create-message [{{id :id :as message} :message collection-id :collection-id }]
+(defmethod process-server-command ::save-or-create-message [{{id :id :as message} :message collection-id :collection-id}]
   (if (nil? id)
     (let [message-with-id (update-with-id message)]
       (m/add-message! data/messages-data collection-id message-with-id)
@@ -79,3 +79,7 @@
       (m/update-message! data/messages-data collection-id id message)
       (send-command! (create-init-messages-command (m/get-messages data/messages-data collection-id) collection-id)))))
 
+(defmethod process-server-command ::save-config [{config :config :as command}]
+  (println "save config! ")
+  (data/update-config! config)
+  (process-server-command (into command {:command ::init})))

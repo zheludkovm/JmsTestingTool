@@ -7,7 +7,7 @@
             [ru.jms.testingtool.command :as comm]
             [reagent-forms.core :refer [bind-fields]]
             [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero validate-func
-                                              switch-page!
+                                              switch-page! show-confirm-dialog
                                               gray-block-button blue-block-button blue-button danger-button danger-button-block]]
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
@@ -134,19 +134,6 @@
      ]
     {:size :lg}))
 
-(defn show-confirm-dialog [message command]
-  (reagent-modals/modal!
-    [:div.container-fluid
-     [:div [:h3 message]]
-     [:br]
-     [:div.row
-      [:div.col-md-6
-       [make-simple-button "Ok" "glyphicon-ok" #(do (command)
-                                                    (reagent-modals/close-modal!)) danger-button-block]]
-      [:div.col-md-6
-       [make-simple-button "Cancel" "glyphicon-remove" #(reagent-modals/close-modal!) blue-block-button]]]
-     [:br]]
-    {:size :sm}))
 
 (defn connections-part []
   [:div.col-md-2 [:h3 "Connections"]

@@ -2,7 +2,8 @@
   (:require-macros [reagent-forms.macros :refer [render-element]])
   (:require [reagent-forms.core :as forms-core]
             [clojure.string :as str]
-            [reagent.session :as session]))
+            [reagent.session :as session]
+            [reagent-modals.modals :as reagent-modals]))
 
 (def gray-block-button "btn btn-default btn-block")
 (def blue-block-button "btn btn-primary btn-block")
@@ -106,3 +107,18 @@
                 :boolean #"false|true|FALSE|TRUE"
                 #".*")]
       (or (and not-null? (empty? value)) (not (re-matches reg value))))))
+
+
+(defn show-confirm-dialog [message command]
+  (reagent-modals/modal!
+    [:div.container-fluid
+     [:div [:h3 message]]
+     [:br]
+     [:div.row
+      [:div.col-md-6
+       [make-simple-button "Ok" "glyphicon-ok" #(do (command)
+                                                    (reagent-modals/close-modal!)) danger-button-block]]
+      [:div.col-md-6
+       [make-simple-button "Cancel" "glyphicon-remove" #(reagent-modals/close-modal!) blue-block-button]]]
+     [:br]]
+    {:size :sm}))
