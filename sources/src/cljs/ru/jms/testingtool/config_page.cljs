@@ -35,10 +35,10 @@
         queues (:queues connection)
         has-empty-title (empty? (:title connection))
 
-        has-empty-queue-titles (has-empty-field queues :name)
-        has-empty-queue-names (has-empty-field queues :title)
+        ;has-empty-queue-titles (has-empty-field queues :title)
+        has-empty-queue-names (has-empty-field queues :name)
         has-incorrect-field (has-true? #(check-field % connection) (:fields provider-info))]
-    (or has-empty-queue-names has-empty-queue-titles has-incorrect-field has-empty-title)))
+    (or has-empty-queue-names  has-incorrect-field has-empty-title)))
 
 (defn is-all-ok? []
   (let [edited-config (:edited-config @data/web-data)
@@ -78,14 +78,14 @@
   [:div.form-horizontal
    [:div.form-group
     [:div.col-xs-4 "name"]
-    [:div.col-xs-4 "title"]]
+    [:div.col-xs-4 "title(optional)"]]
    (for [[idx queue] (with-index (:queues @connection-cursor))
          :let [queue-cursor (ratom/cursor connection-cursor [:queues idx])]]
      ^{:key (str "queue" idx)}
      [bind-fields
       [:div.form-group
        [:div.col-xs-4 [:input.form-control {:field :input-validated :id :name :validate-func empty? :error-class "alert-danger"}]]
-       [:div.col-xs-4 [:input.form-control {:field :input-validated :id :title :validate-func empty? :error-class "alert-danger"}]]
+       [:div.col-xs-4 [:input.form-control {:field :input-validated  :id :title :validate-func empty? :error-class "grayBackground" }]]
        [:div.col-md-1 [make-simple-button "Remove property" "glyphicon-minus" #(comm/exec-client :remove-edited-queue :idx idx) danger-button]]]
       queue-cursor])
    [:div.form-group

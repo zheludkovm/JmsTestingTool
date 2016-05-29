@@ -122,3 +122,8 @@
        [make-simple-button "Cancel" "glyphicon-remove" #(reagent-modals/close-modal!) blue-block-button]]]
      [:br]]
     {:size :sm}))
+
+(defn or-property [value pr1 pr2]
+  (let [v1 (pr1 value)
+        v2 (pr2 value)]
+    (if (not (clojure.string/blank? v1)) v1 v2)))

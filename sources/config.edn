@@ -24,8 +24,8 @@
    :host "localhost",
    :id :5,
    :queues
-   [{:name "queue1", :title "queue1", :id :5}
-    {:name "queue2", :title "queue2", :id :6}]}],
+   [{:name "queue1", :title "", :id :5}
+    {:name "queue2", :title "test queue2", :id :6}]}],
  :collections
  [{:name "Test adapter messages", :id "2"}
   {:name "Test processor messages", :id "3"}]}

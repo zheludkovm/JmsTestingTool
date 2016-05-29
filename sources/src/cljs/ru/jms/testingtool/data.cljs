@@ -117,7 +117,8 @@
 
 (defn select-collection! [id]
   (swap! web-data assoc :selected-collection-id id)
-  (swap! web-data assoc :checked-collections-messages #{}))
+  (swap! web-data assoc :checked-collections-messages #{})
+  (swap! web-data assoc :expanded-collection-messages #{}))
 
 (defn get-checked-size [table-data checked-set-name]
   (let [checked-set (checked-set-name table-data)]

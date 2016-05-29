@@ -113,7 +113,7 @@
 (defmethod process-client-command ::add-new-queue [_]
   (let [idx (:edited-connection-idx @data/web-data)
         count (count (get-in @data/web-data [:edited-config :connections idx :queues]))]
-    (swap! data/web-data assoc-in [:edited-config :connections idx :queues count] {:id (gen-id) :title "new queue" :name "new queue"})))
+    (swap! data/web-data assoc-in [:edited-config :connections idx :queues count] {:id (gen-id) :name "new queue"})))
 
 (defmethod process-client-command ::remove-edited-queue [{idx :idx}]
   (let [connection-idx (:edited-connection-idx @data/web-data)

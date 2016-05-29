@@ -7,25 +7,25 @@
    :init-calls {"setBrokerURL" ["tcp://localhost:61616"]},
    :browse-type :browser,
    :queues
-   [{:name "queue1", :title "queue1", :id :1}
-    {:name "queue2", :title "queue2", :id :2}
-    {:name "testQueue", :title "testQueue", :id 1464430417705}]}
+   [{:name "queue1", :title "", :id :1}
+    {:name "queue2", :title "", :id :2}
+    {:name "testQueue", :title "test queue title", :id 1464430417705}]}
   {:type :stomp,
    :port "61603",
    :title "stomp",
    :host "localhost",
    :id :3,
    :queues
-   [{:name "queue1", :title "queue1", :id :3}
-    {:name "queue2", :title "queue2", :id :4}]}
+   [{:name "queue1", :title "", :id :3}
+    {:name "queue2", :title "queue2 title", :id :4}]}
   {:type :activemq,
    :port "61616",
    :title "activemq",
    :host "localhost",
    :id :5,
    :queues
-   [{:name "queue1", :title "queue1", :id :5}
-    {:name "queue2", :title "queue2", :id :6}]}],
+   [{:name "queue1", :title "", :id :5}
+    {:name "queue2", :title "", :id :6}]}],
  :collections
  [{:name "Test adapter messages", :id "2"}
   {:name "Test processor messages", :id "3"}]}

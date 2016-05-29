@@ -7,7 +7,7 @@
             [ru.jms.testingtool.command :as comm]
             [reagent-forms.core :refer [bind-fields]]
             [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero validate-func
-                                              switch-page! show-confirm-dialog
+                                              switch-page! show-confirm-dialog or-property
                                               gray-block-button blue-block-button blue-button danger-button danger-button-block]]
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
@@ -142,7 +142,7 @@
                  :let [connection-id (:id connection)]]
              ^{:key connection-id}
              [:li
-              (:title connection)
+              [:span.h4 (:title connection)]
               [:ul.list-group
                (doall (for [queue (:queues connection)
                             :let [queue-id (:id queue)]]
@@ -150,7 +150,7 @@
                         [:li.list-group-item
                          {:on-click #(comm/exec-client :select-queue :queue-id queue-id :connection-id connection-id)
                           :class    (if (= queue-id (data/get-selected-queue-id)) "active" "")}
-                         [:span.disable-selection (:title queue)]]))]]))]
+                         [:span.disable-selection (or-property queue :title :name)]]))]]))]
 
    [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
                                                              (switch-page! :config-page)) blue-button]
