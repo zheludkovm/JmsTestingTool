@@ -21,18 +21,14 @@
   ([text glyph disabled-function on-click add-class]
    [:button {:type     "button"
              :class    add-class
-             ;:class    "btn btn"
              :title    text
              :value    text
              :disabled (disabled-function)
-             :on-click on-click
-             }
+             :on-click on-click}
     (if (some? glyph)
       [:span {:class (str "glyphicon " glyph)}])])
-
   ([text glyph on-click add-class]
    (make-simple-button text glyph (constantly false) on-click add-class))
-
   ([text glyph on-click]
    (make-simple-button text glyph (constantly false) on-click "btn btn-primary")))
 

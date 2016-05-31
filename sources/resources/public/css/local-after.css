@@ -75,3 +75,6 @@ hr {
                                    not supported by any browser */
 }
 
+ul li {
+    word-break: break-all;
+}
