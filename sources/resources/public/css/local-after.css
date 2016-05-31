@@ -76,5 +76,13 @@ hr {
 }
 
 ul li {
-    word-break: break-all;
+    word-break: break-word;
+}
+
+.root-container {
+  max-width: 1700px;
+}
+
+.column-auto {
+ width:auto;
 }

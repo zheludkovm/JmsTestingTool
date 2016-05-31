@@ -227,19 +227,22 @@
      [make-simple-button "to end" "glyphicon-fast-forward" check-pager-forward? #(comm/exec-client :pager-action :action :pager-fast-forward) blue-button]]]])
 
 (def buffer-buttons
-  [:div.col-md-1
+  [:div.col-md-1.column-auto
    [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue! blue-button]
    [:br]
    [:br]
    [make-simple-button "To collection" "glyphicon-download-alt" check-selected-buffer-messages? comm/move-buffer-to-collection blue-button]
+   [:br]
    [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]
    ])
 
 (def collection-buttons
-  [:div.col-md-1
+  [:div.col-sm-1.column-auto
    [make-simple-button "Put to queue" "glyphicon-arrow-left" check-selected-collection-messages-and-queue? comm/send-messages blue-button]
+   [:br]
    [make-simple-button "Add new message" "glyphicon-plus" #(do (comm/exec-client :init-add-message)
                                                                (show-edit-message-dialog))]
+   [:br]
    [make-simple-button "Remove" "glyphicon-minus" check-selected-collection-messages? #(show-confirm-dialog "Remove selected messages?" comm/remove-selected-messages) danger-button]])
 
 (def buffer-table {
@@ -273,10 +276,10 @@
         messages ((:messages-func table-data))]
     [:div.container-fluid
      [:div.row
-      [:div.col-xs-1]
+      [:div.col-sm-1]
       [:div.col-xs-6
        [:h2 (:header table-data)]]
-      [:div.col-xs-5
+      [:div.col-xs-4
        [:br]
        (if (:show-collection-combo table-data) (collections-combo))
        (if (and (:show-pager table-data) (> (data/total-buffer-pages) 1)) (show-pager))]]
@@ -310,7 +313,7 @@
                   [:strong (:text item)]])))]])
 
 (defn home-page []
-  [:div.container
+  [:div.container-fluid.root-container
    [:div.page-header
     [:h1 " JMS Testing tool "]
     [reagent-modals/modal-window]]
