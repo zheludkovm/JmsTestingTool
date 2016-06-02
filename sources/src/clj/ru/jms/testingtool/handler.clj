@@ -34,6 +34,8 @@
       [:link {:href "css/local.css" :rel "stylesheet"}]
       [:link {:href "css/bootstrap.min.css" :rel "stylesheet"}]
       [:link {:href "css/local-after.css" :rel "stylesheet"}]
+      [:link {:href "css/raven.css" :rel "stylesheet"}]
+      [:link {:href "css/animate.min.css" :rel "stylesheet"}]
       ]
      [:body
       (include-js "js/jquery-2.1.1.min.js")

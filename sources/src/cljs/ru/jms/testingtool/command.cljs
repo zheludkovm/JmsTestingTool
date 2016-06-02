@@ -130,6 +130,9 @@
         filtered-collections (vec-remove collections idx)]
     (swap! data/web-data assoc-in [:edited-config :collections] filtered-collections)))
 
+(defmethod process-client-command ::expand-connection [{connection-id :connection-id}]
+  (xor-assoc data/web-data :expanded-connection-id connection-id))
+
 
 ;------------------------
 ;gen commands

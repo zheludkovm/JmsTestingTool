@@ -39,6 +39,7 @@
                 {:selected-queue-id            nil
                  :selected-connection-id       nil
                  :selected-collection-id       nil
+                 :expanded-connection-id       nil
 
                  :log-entries                  '()
                  :edited-message               {}

@@ -11,7 +11,8 @@
                                               gray-block-button blue-block-button blue-button danger-button danger-button-block]]
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
-            [ru.jms.testingtool.shared.model :as m]))
+            [ru.jms.testingtool.shared.model :as m]
+            [raven.notify :as notify]))
 
 
 (defn check-queue-selection? []
@@ -136,24 +137,32 @@
 
 
 (defn connections-part []
-  [:div.col-md-2 [:h3 "Connections"]
+  [:div.col-md-2
+   [:h3 "Connections " [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
+                                                                                 (switch-page! :config-page)) blue-button]]
+
    [:ul.list-unstyled
     (doall (for [connection (:connections @data/config-data)
                  :let [connection-id (:id connection)]]
              ^{:key connection-id}
              [:li
-              [:span.h4 (:title connection)]
-              [:ul.list-group
-               (doall (for [queue (:queues connection)
-                            :let [queue-id (:id queue)]]
-                        ^{:key queue-id}
-                        [:li.list-group-item
-                         {:on-click #(comm/exec-client :select-queue :queue-id queue-id :connection-id connection-id)
-                          :class    (if (= queue-id (data/get-selected-queue-id)) "active" "")}
-                         [:span.disable-selection (or-property queue :title :name)]]))]]))]
+              [:span.h4
+               [make-simple-button "Expand" "glyphicon-zoom-in" #(comm/exec-client :expand-connection :connection-id connection-id) "btn btn-default btn-sm"]
+               (:title connection)]
+              (if (= (:expanded-connection-id @data/web-data) connection-id)
+                [:ul.list-group
+                 (doall (for [queue (:queues connection)
+                              :let [queue-id (:id queue)]]
+                          ^{:key queue-id}
+                          [:li.list-group-item
+                           {:on-click #(comm/exec-client :select-queue :queue-id queue-id :connection-id connection-id)
+                            :class    (if (= queue-id (data/get-selected-queue-id)) "active" "")}
+                           [:span.disable-selection (or-property queue :title :name)]]))]
+                )
+              ]))]
 
-   [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
-                                                             (switch-page! :config-page)) blue-button]
+   ;[make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
+   ;                                                          (switch-page! :config-page)) blue-button]
    ])
 
 (defn gen-property
@@ -238,7 +247,10 @@
 
 (def collection-buttons
   [:div.col-sm-1.column-auto
-   [make-simple-button "Put to queue" "glyphicon-arrow-left" check-selected-collection-messages-and-queue? comm/send-messages blue-button]
+   [make-simple-button "Put to queue" "glyphicon-arrow-left" check-selected-collection-messages-and-queue? #(do
+                                                                                                             (comm/send-messages)
+                                                                                                             (notify/notify "Send message!" :type :info :delay 1000)
+                                                                                                             ) blue-button]
    [:br]
    [make-simple-button "Add new message" "glyphicon-plus" #(do (comm/exec-client :init-add-message)
                                                                (show-edit-message-dialog))]
@@ -327,6 +339,9 @@
     [:div
      (log-part)
      ;[:a {:href " #/about "} " about "]
-     ]]])
+     ]
+    [notify/notifications]
+    ]
+   ])
 
 (js-println " main page initialized! ")
