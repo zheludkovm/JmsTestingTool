@@ -56,6 +56,10 @@ hr {
   width: 4em;
 }
 
+.add-margin-down {
+  margin-bottom: 0.3em;
+}
+
 .right-group {
   text-align: right;
 }

@@ -145,9 +145,10 @@
     (doall (for [connection (:connections @data/config-data)
                  :let [connection-id (:id connection)]]
              ^{:key connection-id}
-             [:li
+             [:div.add-margin-down
               [:span.h4
                [make-simple-button "Expand" "glyphicon-zoom-in" #(comm/exec-client :expand-connection :connection-id connection-id) "btn btn-default btn-sm"]
+               " "
                (:title connection)]
               (if (= (:expanded-connection-id @data/web-data) connection-id)
                 [:ul.list-group
@@ -157,13 +158,7 @@
                           [:li.list-group-item
                            {:on-click #(comm/exec-client :select-queue :queue-id queue-id :connection-id connection-id)
                             :class    (if (= queue-id (data/get-selected-queue-id)) "active" "")}
-                           [:span.disable-selection (or-property queue :title :name)]]))]
-                )
-              ]))]
-
-   ;[make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
-   ;                                                          (switch-page! :config-page)) blue-button]
-   ])
+                           [:span.disable-selection (or-property queue :title :name)]]))])]))]])
 
 (defn gen-property
   ([label value type]
