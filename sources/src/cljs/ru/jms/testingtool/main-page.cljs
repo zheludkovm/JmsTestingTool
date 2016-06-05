@@ -142,7 +142,7 @@
                                                                                  (switch-page! :config-page)) blue-button]]
 
    [:ul.list-unstyled
-    (doall (for [connection (:connections @data/config-data)
+    (doall (for [connection (data/sorted-connections)
                  :let [connection-id (:id connection)]]
              ^{:key connection-id}
              [:div.add-margin-down
@@ -152,7 +152,7 @@
                (:title connection)]
               (if (= (:expanded-connection-id @data/web-data) connection-id)
                 [:ul.list-group
-                 (doall (for [queue (:queues connection)
+                 (doall (for [queue (data/sorted-queues connection)
                               :let [queue-id (:id queue)]]
                           ^{:key queue-id}
                           [:li.list-group-item

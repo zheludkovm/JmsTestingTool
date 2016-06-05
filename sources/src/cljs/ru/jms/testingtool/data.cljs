@@ -91,6 +91,13 @@
 (defn buffer-messages []
   (m/get-messages messages-data :buffer))
 
+(defn sorted-connections []
+  (sort-by :title (:connections @config-data)))
+
+(defn sorted-queues [connection]
+  (->> (:queues connection)
+       (sort-by #(u/or-property % :title :name))))
+
 (defn filter-messages [messages filter-field-in-webdata filter-field-in-message]
   (filter (u/contains-or-empty? filter-field-in-message (filter-field-in-webdata @web-data)) messages))
 
