@@ -105,7 +105,7 @@
   (filter-messages (selected-messages) :collection-filter :short-title))
 
 (defn filtered-buffer-messages []
-  (filter-messages (buffer-messages) :buffer-filter :long-title))
+  (reverse (filter-messages (buffer-messages) :buffer-filter :long-title)))
 
 (defn partionitoned-buffer-messages []
   (let [messages (filtered-buffer-messages)]

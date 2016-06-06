@@ -143,14 +143,18 @@
 
    [:ul.list-unstyled
     (doall (for [connection (data/sorted-connections)
-                 :let [connection-id (:id connection)]]
+                 :let [connection-id (:id connection)
+                       is-expanded (= (:expanded-connection-id @data/web-data) connection-id)]]
              ^{:key connection-id}
              [:div.add-margin-down
               [:span.h4
-               [make-simple-button "Expand" "glyphicon-zoom-in" #(comm/exec-client :expand-connection :connection-id connection-id) "btn btn-default btn-sm"]
+               (make-simple-button "Expand"
+                                   (if is-expanded "glyphicon-zoom-out" "glyphicon-zoom-in")
+                                   #(comm/exec-client :expand-connection :connection-id connection-id)
+                                   "btn btn-default btn-sm")
                " "
                (:title connection)]
-              (if (= (:expanded-connection-id @data/web-data) connection-id)
+              (if is-expanded
                 [:ul.list-group
                  (doall (for [queue (data/sorted-queues connection)
                               :let [queue-id (:id queue)]]

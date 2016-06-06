@@ -131,6 +131,9 @@
     (swap! data/web-data assoc-in [:edited-config :collections] filtered-collections)))
 
 (defmethod process-client-command ::expand-connection [{connection-id :connection-id}]
+  (swap! data/web-data assoc
+         :selected-connection-id nil
+         :selected-queue-id nil)
   (xor-assoc data/web-data :expanded-connection-id connection-id))
 
 
