@@ -15,6 +15,7 @@
 (defprotocol ConfigStore
   (get-collections [this])
   (get-first-collection-id [this])
+  (get-first-connection-id [this])
   (get-queue [this connection-id queue-id])
   (to-map [this])
   (get-collection [this collection-id]))
@@ -25,6 +26,8 @@
     (:collections this))
   (get-first-collection-id [this]
     (get-in this [:collections 0 :id]))
+  (get-first-connection-id [this]
+    (get-in this [:connections 0 :id]))
   (get-queue [this connection-id queue-id]
     (let [connection (s/select-first [:connections (cu/ALL-GET-BY-ID connection-id)] this)
           queue (s/select-first [:queues (cu/ALL-GET-BY-ID queue-id)] connection)]

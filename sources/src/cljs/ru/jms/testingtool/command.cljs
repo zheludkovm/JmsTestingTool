@@ -1,8 +1,10 @@
 (ns ru.jms.testingtool.command
-  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id]]
+  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property]]
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
-            [ru.jms.testingtool.shared.model :as m]))
+            [ru.jms.testingtool.shared.model :as m]
+            [com.rpl.specter :as s]
+            ))
 
 (declare browse-queue!)
 (declare add-log-entry!)
@@ -13,6 +15,7 @@
   (reset! data/config-data (m/map->ConfigType config))
   (swap! data/web-data assoc
          :selected-collection-id (m/get-first-collection-id @data/config-data)
+         :expanded-connection-id (:id (first (data/sorted-connections)))
          :selected-connection-id nil
          :selected-queue-id nil)
   (m/init-messages! data/messages-data :buffer [])
@@ -189,9 +192,15 @@
                   :collection-id (:selected-collection-id @data/web-data)}))
 
 (defn save-config! []
-  (send-command! {:direction :server
-                  :command   ::save-config
-                  :config    (:edited-config @data/web-data)}))
+  (let [config (:edited-config @data/web-data)
+        connections (:connections config)
+        sorted-connections (vec (sort-by :title connections))
+        ;tmp (s/transform [:connections :queues s/ALL ] reverse  config)
+        ;_ (js-println "tmp=" tmp)
+        ]
+    (send-command! {:direction :server
+                    :command   ::save-config
+                    :config    (into config {:connections sorted-connections})})))
 
 (defn exec-client [command & params]
   (send-command! (into {:direction :client

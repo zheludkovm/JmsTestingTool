@@ -167,4 +167,7 @@
 ; config edit
 
 (defn prepare-config-for-edit! []
-  (swap! web-data assoc :edited-config (into {} @config-data)))
+  (swap! web-data assoc
+         :edited-config (into {} @config-data)
+         :edited-connection-idx (if (empty? (:connections @config-data)) nil 0)
+         ))
