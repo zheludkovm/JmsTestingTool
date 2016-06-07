@@ -123,3 +123,7 @@
   (let [v1 (pr1 value)
         v2 (pr2 value)]
     (if (not (clojure.string/blank? v1)) v1 v2)))
+
+(def vec-sort-by
+  (comp vec sort-by)
+  )

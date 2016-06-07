@@ -1,5 +1,5 @@
 (ns ru.jms.testingtool.command
-  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property]]
+  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property or-property vec-sort-by]]
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
             [ru.jms.testingtool.shared.model :as m]
@@ -191,16 +191,14 @@
                   :id-list       (:checked-buffer-messages @data/web-data)
                   :collection-id (:selected-collection-id @data/web-data)}))
 
+
 (defn save-config! []
-  (let [config (:edited-config @data/web-data)
-        connections (:connections config)
-        sorted-connections (vec (sort-by :title connections))
-        ;tmp (s/transform [:connections :queues s/ALL ] reverse  config)
-        ;_ (js-println "tmp=" tmp)
-        ]
-    (send-command! {:direction :server
-                    :command   ::save-config
-                    :config    (into config {:connections sorted-connections})})))
+  (send-command! {:direction :server
+                  :command   ::save-config
+                  :config    (->> (:edited-config @data/web-data)
+                                  (s/transform [:connections s/ALL :queues] (fn [coll] (vec-sort-by #(or-property % :title :name) coll)))
+                                  (s/transform [:connections] #(vec-sort-by :title %))
+                                  )}))
 
 (defn exec-client [command & params]
   (send-command! (into {:direction :client
