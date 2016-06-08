@@ -71,6 +71,12 @@
   [coll pos]
   (vec (concat (subvec coll 0 pos) (subvec coll (inc pos)))))
 
+(defn f-vec-remove [idx]
+  #(vec-remove % idx))
+
+(defn f-conj [value]
+  #(conj % value))
+
 (defmethod forms-core/init-field :input-validated
   [[type {:keys [id validate-func error-class] :as attrs}] {:keys [doc get save!]}]
   (render-element attrs doc

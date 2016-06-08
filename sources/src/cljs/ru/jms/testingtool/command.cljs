@@ -1,5 +1,5 @@
 (ns ru.jms.testingtool.command
-  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property or-property vec-sort-by]]
+  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property or-property vec-sort-by f-vec-remove f-conj]]
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
             [ru.jms.testingtool.shared.model :as m]
@@ -125,13 +125,11 @@
     (swap! data/web-data assoc-in [:edited-config :connections connection-idx :queues] filtered-queues)))
 
 (defmethod process-client-command ::add-collection [_]
-  (let [count (count (get-in @data/web-data [:edited-config :collections]))]
-    (swap! data/web-data assoc-in [:edited-config :collections count] {:id (gen-id) :name "new collection"})))
+  (let [new-collection {:id (gen-id) :name "new collection"}]
+    (swap! data/web-data #(s/transform [:edited-config :collections] (f-conj new-collection) %))))
 
 (defmethod process-client-command ::remove-collection [{idx :idx}]
-  (let [collections (get-in @data/web-data [:edited-config :collections])
-        filtered-collections (vec-remove collections idx)]
-    (swap! data/web-data assoc-in [:edited-config :collections] filtered-collections)))
+  (swap! data/web-data #(s/transform [:edited-config :collections] (f-vec-remove idx) %)))
 
 (defmethod process-client-command ::expand-connection [{connection-id :connection-id}]
   (swap! data/web-data assoc

@@ -56,7 +56,7 @@
        [:div.col-xs-4.nomargin
         [:input.form-control {:field :input-validated :id :name :validate-func empty? :error-class "alert-danger"}]]
        [:div.col-md-5
-        [make-simple-button "Remove property" "glyphicon-minus"  #(comm/exec-client :remove-collection :idx idx) danger-button]]]
+        [make-simple-button "Remove collection" "glyphicon-minus"  #(comm/exec-client :remove-collection :idx idx) danger-button]]]
       collection-cursor])])
 
 (defn add-connections-list []
