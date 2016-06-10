@@ -75,9 +75,13 @@
 (defmethod process-client-command ::check-message [{message-id :message-id checked-set-symb :checked-set}]
   (let [checked-set (checked-set-symb @data/web-data)
         is-checked (not (contains? checked-set message-id))
-        op (if is-checked conj disj)
-        new-checked-set (op checked-set message-id)]
+        new-checked-set (if is-checked #{message-id} #{})]
     (swap! data/web-data assoc checked-set-symb new-checked-set)))
+;(let [checked-set (checked-set-symb @data/web-data)
+;      is-checked (not (contains? checked-set message-id))
+;      op (if is-checked conj disj)
+;      new-checked-set (op checked-set message-id)]
+;  (swap! data/web-data assoc checked-set-symb new-checked-set)))
 
 (defmethod process-client-command ::init-add-message [_]
   (swap! data/web-data assoc :edited-message {:type :string :headers []}))
@@ -162,10 +166,10 @@
                   :connection-id (:selected-connection-id @data/web-data)
                   :queue-id      (:selected-queue-id @data/web-data)}))
 
-(defn remove-selected-messages []
+(defn remove-selected-messages [id-msg]
   (send-command! {:direction     :server
                   :command       ::remove-messages
-                  :id-list       (:checked-collections-messages @data/web-data)
+                  :id-list       #{id-msg}
                   :collection-id (:selected-collection-id @data/web-data)
                   }))
 
@@ -183,10 +187,10 @@
                   :queue-id      (:selected-queue-id @data/web-data)
                   :connection-id (:selected-connection-id @data/web-data)}))
 
-(defn move-buffer-to-collection []
+(defn move-buffer-to-collection [id-msg]
   (send-command! {:direction     :server
                   :command       ::move-buffer-to-collection
-                  :id-list       (:checked-buffer-messages @data/web-data)
+                  :id-list       #{id-msg}
                   :collection-id (:selected-collection-id @data/web-data)}))
 
 

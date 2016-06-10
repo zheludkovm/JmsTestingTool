@@ -90,3 +90,7 @@ ul li {
 .column-auto {
  width:auto;
 }
+
+.high-button {
+    padding: 30px 12px;
+}

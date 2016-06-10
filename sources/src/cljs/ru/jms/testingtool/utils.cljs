@@ -8,6 +8,7 @@
 (def gray-block-button "btn btn-default btn-block")
 (def blue-block-button "btn btn-primary btn-block")
 (def blue-button "btn btn-primary")
+(def green-button "btn high-button btn-success")
 (def danger-button "btn btn-danger")
 (def danger-button-block "btn btn-danger btn-block")
 

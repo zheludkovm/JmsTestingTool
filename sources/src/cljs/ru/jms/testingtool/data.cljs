@@ -102,7 +102,7 @@
   (filter (u/contains-or-empty? filter-field-in-message (filter-field-in-webdata @web-data)) messages))
 
 (defn filtered-collection-messages []
-  (filter-messages (selected-messages) :collection-filter :short-title))
+  (sort-by :short-title (filter-messages (selected-messages) :collection-filter :short-title)))
 
 (defn filtered-buffer-messages []
   (reverse (filter-messages (buffer-messages) :buffer-filter :long-title)))
@@ -141,11 +141,11 @@
   (not= 0 (get-checked-size table-data checked-set-name)))
 
 (defn select-deselect-all! [table-data checked-set-name]
-  (let [checked-set (checked-set-name table-data)
-        all-id-set (set (map :id ((:all-messages-func table-data))))]
-    (if (not (has-selected? table-data checked-set-name))
-      (swap! web-data assoc checked-set all-id-set)
-      (swap! web-data assoc checked-set #{}))))
+(let [checked-set (checked-set-name table-data)
+      all-id-set (set (map :id ((:all-messages-func table-data))))]
+  (if (not (has-selected? table-data checked-set-name))
+    (swap! web-data assoc checked-set all-id-set)
+    (swap! web-data assoc checked-set #{}))))
 
 ;pager methods
 

@@ -8,7 +8,7 @@
             [reagent-forms.core :refer [bind-fields]]
             [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero validate-func
                                               switch-page! show-confirm-dialog or-property
-                                              gray-block-button blue-block-button blue-button danger-button danger-button-block]]
+                                              gray-block-button blue-block-button blue-button danger-button danger-button-block green-button]]
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
             [ru.jms.testingtool.shared.model :as m]
@@ -177,10 +177,12 @@
       [:label.col-sm-1.control-label (name type)])]))
 
 (defn table-row-collapsed [id-msg msg table-data]
-  (let [select-msg-props {:on-click (select-message-func id-msg table-data)}]
+  (let [show-selection (:show-selection table-data)
+        select-msg-props (if show-selection {:on-click (select-message-func id-msg table-data)} {})]
     ^{:key id-msg}
     [:tr
-     [:td.col-md-1 select-msg-props [make-message-checkbox id-msg table-data]]
+     (if (:show-selection table-data)
+       [:td.col-md-1 select-msg-props [make-message-checkbox id-msg table-data]])
      [:td.col-md-1 select-msg-props (:short-title msg)]
      [:td.col-md-1 select-msg-props (name (:type msg))]
      [:td.col-md-1 (make-simple-button "Expand"
@@ -189,11 +191,12 @@
                                        gray-block-button)]]))
 
 (defn table-row-expanded [id-msg msg table-data]
-  (let [select-msg-f (select-message-func id-msg table-data)]
+  (let [select-msg-f (select-message-func id-msg table-data)
+        show-selection (:show-selection table-data)]
     ^{:key id-msg}
     [:tr
-     [:td {:on-click select-msg-f} [make-message-checkbox id-msg table-data]]
-     [:td {:col-span 2 :on-click select-msg-f}
+     (if show-selection [:td {:on-click select-msg-f} [make-message-checkbox id-msg table-data]])
+     [:td {:col-span 2 :on-click (if show-selection select-msg-f #())}
       [:div.container-fluid
        [:div.form-horizontal
         (if-not (:is-editable table-data)
@@ -216,10 +219,14 @@
        #(comm/exec-client :collapse-message :message-id id-msg :expanded-set (:expanded-set table-data))
        gray-block-button]
       (if (:is-editable table-data)
-        [make-simple-button
-         "Edit" "glyphicon-wrench"
-         #(do (comm/exec-client :init-edit-message :message-id id-msg) (show-edit-message-dialog))
-         gray-block-button])]]))
+        [:div
+         [make-simple-button "Edit" "glyphicon-wrench"
+          #(do (comm/exec-client :init-edit-message :message-id id-msg) (show-edit-message-dialog))
+          gray-block-button]
+         [make-simple-button "Remove" "glyphicon-trash"
+          (fn [] (show-confirm-dialog "Remove selected messages?" #(comm/remove-selected-messages id-msg))) danger-button-block]]
+        [make-simple-button "To collection" "glyphicon-download-alt" #(comm/move-buffer-to-collection id-msg) blue-block-button]
+        )]]))
 
 (defn show-pager []
   [:div.row
@@ -239,8 +246,6 @@
    [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue! blue-button]
    [:br]
    [:br]
-   [make-simple-button "To collection" "glyphicon-download-alt" check-selected-buffer-messages? comm/move-buffer-to-collection blue-button]
-   [:br]
    [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]
    ])
 
@@ -249,12 +254,10 @@
    [make-simple-button "Put to queue" "glyphicon-arrow-left" check-selected-collection-messages-and-queue? #(do
                                                                                                              (comm/send-messages)
                                                                                                              (notify/notify "Send message!" :type :info :delay 1000)
-                                                                                                             ) blue-button]
+                                                                                                             ) green-button]
    [:br]
    [make-simple-button "Add new message" "glyphicon-plus" #(do (comm/exec-client :init-add-message)
-                                                               (show-edit-message-dialog))]
-   [:br]
-   [make-simple-button "Remove" "glyphicon-minus" check-selected-collection-messages? #(show-confirm-dialog "Remove selected messages?" comm/remove-selected-messages) danger-button]])
+                                                               (show-edit-message-dialog))]])
 
 (def buffer-table {
                    :messages-func         data/paged-buffer-messages
@@ -267,7 +270,9 @@
                    :message-column-filter :buffer-filter
                    :expanded-set          :expanded-buffer-messages
                    :is-editable           false
-                   :show-pager            true})
+                   :show-pager            true
+                   :show-selection        false
+                   })
 
 (def collection-table {
                        :messages-func         data/filtered-collection-messages
@@ -280,11 +285,14 @@
                        :message-column-filter :collection-filter
                        :expanded-set          :expanded-collection-messages
                        :is-editable           true
-                       :show-pager            false})
+                       :show-pager            false
+                       :show-selection        true})
 
 (defn messages-table-part [table-data]
   (let [expanded-messages ((:expanded-set table-data) @data/web-data)
-        messages ((:messages-func table-data))]
+        messages ((:messages-func table-data))
+        show-selection (:show-selection table-data)
+        ]
     [:div.container-fluid
      [:div.row
       [:div.col-sm-1]
@@ -300,8 +308,11 @@
        [:table.table
         [:thead
          [:tr
-          [:th.col-md-1 (make-selection-header-checkbox table-data)]
-          [:th.col-md-7 [:div [:span.add-margin-right (:message-column-header table-data)] [:span (make-header-filter table-data)]]]
+          (if show-selection
+            ;[:th.col-md-1 (make-selection-header-checkbox table-data)]
+            [:th.col-md-1]
+            )
+          [(if show-selection :th.col-md-7 :th.col-md-8) [:div [:span.add-margin-right (:message-column-header table-data)] [:span (make-header-filter table-data)]]]
           [:th.col-md-1 " type "]
           [:th.col-md-1 (make-collapse-expand-button messages table-data)]]]
         [:tbody
