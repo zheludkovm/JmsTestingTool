@@ -95,6 +95,10 @@ ul li {
     padding: 30px 12px;
 }
 
+.middle-button {
+    padding: 15px 12px;
+}
+
 .notification-fix {
     color:white;
     background-color:transparent;

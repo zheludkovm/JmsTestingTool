@@ -153,7 +153,7 @@
                                    #()
                                    "btn btn-default btn-sm")
                " "
-               (:title connection)]
+               [:span.disable-selection (:title connection)]]
               (if is-expanded
                 [:ul.list-group
                  (doall (for [queue (data/sorted-queues connection)
@@ -243,8 +243,7 @@
 
 (def buffer-buttons
   [:div.col-md-1.column-auto
-   [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue! blue-button]
-   [:br]
+   [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue! "btn btn-primary middle-button"]
    [:br]
    [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]
    ])
