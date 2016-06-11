@@ -8,11 +8,11 @@
             [reagent-forms.core :refer [bind-fields]]
             [ru.jms.testingtool.utils :refer [js-println make-simple-button row row4 selected-index js-is-checked indexes with-index row1 vec-remove to-zero validate-func
                                               switch-page! show-confirm-dialog or-property
-                                              gray-block-button blue-block-button blue-button danger-button danger-button-block green-button]]
+                                              gray-block-button blue-block-button blue-button danger-button danger-button-block green-button gray-button]]
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
             [ru.jms.testingtool.shared.model :as m]
-            [raven.notify :as notify]))
+            [ru.jms.testingtool.utils.raven :as notify]))
 
 
 (defn check-queue-selection? []
@@ -139,7 +139,7 @@
 (defn connections-part []
   [:div.col-md-2
    [:h3 "Connections " [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
-                                                                                 (switch-page! :config-page)) blue-button]]
+                                                                                 (switch-page! :config-page)) gray-button]]
 
    [:ul.list-unstyled
     (doall (for [connection (data/sorted-connections)
@@ -147,10 +147,10 @@
                        is-expanded (= (:expanded-connection-id @data/web-data) connection-id)]]
              ^{:key connection-id}
              [:div.add-margin-down
-              [:span.h4
+              [:span.h4 {:on-click #(comm/exec-client :expand-connection :connection-id connection-id)}
                (make-simple-button "Expand"
                                    (if is-expanded "glyphicon-zoom-out" "glyphicon-zoom-in")
-                                   #(comm/exec-client :expand-connection :connection-id connection-id)
+                                   #()
                                    "btn btn-default btn-sm")
                " "
                (:title connection)]
@@ -225,7 +225,7 @@
           gray-block-button]
          [make-simple-button "Remove" "glyphicon-trash"
           (fn [] (show-confirm-dialog "Remove selected messages?" #(comm/remove-selected-messages id-msg))) danger-button-block]]
-        [make-simple-button "To collection" "glyphicon-download-alt" #(comm/move-buffer-to-collection id-msg) blue-block-button]
+        [make-simple-button "To collection" "glyphicon-download-alt" #(comm/move-buffer-to-collection id-msg) gray-block-button]
         )]]))
 
 (defn show-pager []
@@ -251,9 +251,9 @@
 
 (def collection-buttons
   [:div.col-sm-1.column-auto
-   [make-simple-button "Put to queue" "glyphicon-arrow-left" check-selected-collection-messages-and-queue? #(do
+   [make-simple-button "Send message to queue!" "glyphicon-flash" check-selected-collection-messages-and-queue? #(do
                                                                                                              (comm/send-messages)
-                                                                                                             (notify/notify "Send message!" :type :info :delay 1000)
+                                                                                                             (notify/notify "Send message!" :type :warning :delay 2000)
                                                                                                              ) green-button]
    [:br]
    [make-simple-button "Add new message" "glyphicon-plus" #(do (comm/exec-client :init-add-message)
@@ -338,7 +338,8 @@
   [:div.container-fluid.root-container
    [:div.page-header
     [:h1 " JMS Testing tool "]
-    [reagent-modals/modal-window]]
+    [reagent-modals/modal-window]
+    [notify/notifications]]
    [:div.row
     (connections-part)
     [:div.container.col-md-10
@@ -347,10 +348,9 @@
      [:div.row (messages-table-part collection-table)]]]
    [:div.page-footer
     [:div
-     (log-part)
+     ;(log-part)
      ;[:a {:href " #/about "} " about "]
      ]
-    [notify/notifications]
     ]
    ])
 

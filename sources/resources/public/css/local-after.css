@@ -94,3 +94,9 @@ ul li {
 .high-button {
     padding: 30px 12px;
 }
+
+.notification-fix {
+    color:white;
+    background-color:transparent;
+    border: 0px solid #ccc;
+}

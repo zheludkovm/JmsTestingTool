@@ -35,4 +35,4 @@
   (to-map [this]
     (into {} this))
   (get-collection [this collection-id]
-    (s/select-first [:collections (cu/ALL-GET-BY-ID collection-id)] this)))
+    (s/select-first [:collections  (cu/ALL-GET-BY-ID collection-id)] this)))

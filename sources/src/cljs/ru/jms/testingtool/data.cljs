@@ -1,6 +1,6 @@
 (ns ru.jms.testingtool.data
   (:require [reagent.core :as reagent :refer [atom]]
-            [ru.jms.testingtool.utils :refer [js-println xor-assoc]]
+            [ru.jms.testingtool.utils :refer [js-println xor-assoc in?]]
             [ru.jms.testingtool.shared.model :as m]
             [com.rpl.specter :as s]
             [ru.jms.testingtool.shared.common-utils :as cu]
@@ -59,6 +59,7 @@
                  }))
 
 
+
 ;support web data functions
 (defn get-selected-queue-id []
   (:selected-queue-id @web-data))
@@ -72,7 +73,9 @@
     (m/get-first-collection-id @config-data)))
 
 (defn get-collection-name [collection-id]
-  (:name (m/get-collection @config-data collection-id)))
+  (if (= collection-id :buffer)
+    "Buffer"
+    (:name (m/get-collection @config-data collection-id))))
 
 (defn get-selected-collection-name []
   (get-collection-name (get-selected-collection-id)))
@@ -141,11 +144,11 @@
   (not= 0 (get-checked-size table-data checked-set-name)))
 
 (defn select-deselect-all! [table-data checked-set-name]
-(let [checked-set (checked-set-name table-data)
-      all-id-set (set (map :id ((:all-messages-func table-data))))]
-  (if (not (has-selected? table-data checked-set-name))
-    (swap! web-data assoc checked-set all-id-set)
-    (swap! web-data assoc checked-set #{}))))
+  (let [checked-set (checked-set-name table-data)
+        all-id-set (set (map :id ((:all-messages-func table-data))))]
+    (if (not (has-selected? table-data checked-set-name))
+      (swap! web-data assoc checked-set all-id-set)
+      (swap! web-data assoc checked-set #{}))))
 
 ;pager methods
 
@@ -171,3 +174,11 @@
          :edited-config (into {} @config-data)
          :edited-connection-idx (if (empty? (:connections @config-data)) nil 0)
          ))
+
+
+; scan if selected messge visible
+(add-watch web-data :collection-filter
+           #(if-let [checked-msg-id (first (:checked-collections-messages @web-data))]
+             (if (not (in? (map :id (filtered-collection-messages)) checked-msg-id))
+               (swap! web-data assoc :checked-collections-messages #{})
+               )))

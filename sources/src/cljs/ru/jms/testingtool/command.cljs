@@ -4,6 +4,7 @@
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
             [ru.jms.testingtool.shared.model :as m]
             [com.rpl.specter :as s]
+            [ru.jms.testingtool.utils.raven :as notify]
             ))
 
 (declare browse-queue!)
@@ -29,7 +30,10 @@
   (data/validate-current-page-number!)
   (if (= collection-id :buffer)
     (swap! data/web-data assoc :checked-buffer-messages #{}))
-  (add-log-entry! (str "receive " (count messages) " messages into collection " (data/get-collection-name collection-id))))
+  (if (> (count messages) 0)
+    (let [log-message (str "receive " (count messages) " messages into collection " (data/get-collection-name collection-id))]
+      (notify/notify log-message :type :info :delay 2000)
+      (add-log-entry! log-message))))
 
 (defmethod process-client-command ::remove-messages [{id-list :id-list collection-id :collection-id}]
   (m/remove-messages! data/messages-data collection-id id-list)

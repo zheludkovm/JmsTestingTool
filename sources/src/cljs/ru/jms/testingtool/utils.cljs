@@ -6,6 +6,7 @@
             [reagent-modals.modals :as reagent-modals]))
 
 (def gray-block-button "btn btn-default btn-block")
+(def gray-button "btn btn-default")
 (def blue-block-button "btn btn-primary btn-block")
 (def blue-button "btn btn-primary")
 (def green-button "btn high-button btn-success")
@@ -132,5 +133,9 @@
     (if (not (clojure.string/blank? v1)) v1 v2)))
 
 (def vec-sort-by
-  (comp vec sort-by)
-  )
+  (comp vec sort-by))
+
+(defn in?
+  "true if coll contains elm"
+  [coll elm]
+  (some #(= elm %) coll))
