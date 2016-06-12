@@ -83,3 +83,11 @@
   (println "save config! ")
   (data/update-config! config)
   (process-server-command (into command {:command ::init})))
+
+(defmethod process-server-command ::transfer-message-to-collection [{id-msg :id-msg from-collection-id :from-collection-id to-collection-id :to-collection-id}]
+  (let [msg (m/get-message data/messages-data from-collection-id id-msg)]
+    (m/remove-messages! data/messages-data from-collection-id #{id-msg})
+    (m/add-message! data/messages-data to-collection-id msg)
+    (send-collection! from-collection-id)
+    (send-collection! to-collection-id)))
+

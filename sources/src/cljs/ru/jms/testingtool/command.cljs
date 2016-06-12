@@ -56,6 +56,9 @@
 (defmethod process-client-command ::select-collection [{id :id}]
   (data/select-collection! id))
 
+(defmethod process-client-command ::select-transfer-collection [{id :id}]
+  (swap! data/web-data assoc :transfer-collection-id id))
+
 (defmethod process-client-command ::remove-message-header [{idx :idx}]
   (let [headers (get-in @data/web-data [:edited-message :headers])
         changed-headers (vec-remove headers idx)]
@@ -207,3 +210,9 @@
                         :command   (keyword "ru.jms.testingtool.command" (name command))}
                        (map vec (partition 2 params)))))
 
+(defn transfer-message [id-msg]
+  (send-command! {:direction     :server
+                  :command       ::transfer-message-to-collection
+                  :id-msg       id-msg
+                  :from-collection-id (:selected-collection-id @data/web-data)
+                  :to-collection-id (:transfer-collection-id @data/web-data)}))

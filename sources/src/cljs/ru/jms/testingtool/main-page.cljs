@@ -49,9 +49,9 @@
   (let [checked (contains? (checked-set @data/web-data) id-msg)]
     [:span {:class (if checked "glyphicon glyphicon-check" "glyphicon glyphicon-unchecked")}]))
 
-(defn collections-combo []
-  [:select.form-control {:on-change #(comm/exec-client :select-collection :id (data/get-non-buffer-collection-id (selected-index %)))
-                         :value     (data/get-selected-collection-name)}
+(defn collections-combo [on-change-fn value-fn]
+  [:select.form-control {:on-change on-change-fn
+                         :value     (value-fn)}
    (doall (for [collection (data/non-buffer-collections)]
             [:option
              {:key (:id collection)}
@@ -140,6 +140,28 @@
      ]
     {:size :lg}))
 
+(defn selected-different-transfer-collection? []
+  (= (:transfer-collection-id @data/web-data) (:selected-collection-id @data/web-data)))
+
+(defn show-transfer-dialog [id-msg title]
+  (data/copy-current-collection-id)
+  (reagent-modals/modal!
+    [:div.container-fluid
+     [:div [:h3 "Transfer message '" title "' to collection"]]
+     [:div [:h4 ]]
+     [:div [:h4 [collections-combo
+                 #(comm/exec-client :select-transfer-collection :id (data/get-non-buffer-collection-id (selected-index %)))
+                 data/get-transfer-collection-name]]]
+     [:br]
+     [:div.row
+      [:div.col-md-2
+       [make-simple-button "Ok" "glyphicon-ok" selected-different-transfer-collection? #(do (comm/transfer-message id-msg)
+                                                                                            (reagent-modals/close-modal!)) danger-button-block]]
+      [:div.col-md-2
+       [make-simple-button "Cancel" "glyphicon-remove" #(reagent-modals/close-modal!) blue-block-button]]]
+     [:br]]
+    {:size :md}))
+
 (defn connections-part []
   [:div.col-md-2
    [:h3 "Connections " [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
@@ -217,6 +239,7 @@
      [:td
       (row-collapse-button id-msg :expanded-collection-messages)
       (make-simple-button "Edit" "glyphicon-wrench" #(do (comm/exec-client :init-edit-message :message-id id-msg) (show-edit-message-dialog)) gray-block-button)
+      (make-simple-button "Transfer" "glyphicon-transfer" #(show-transfer-dialog id-msg (:short-title msg)) gray-block-button)
       (make-simple-button "Remove" "glyphicon-trash" (fn [] (show-confirm-dialog "Remove selected messages?" #(comm/remove-selected-messages id-msg))) danger-button-block)]]))
 
 (defn buffer-row-expanded [id-msg msg]
@@ -271,7 +294,9 @@
      [:div.row
       [:div.col-sm-1]
       [:div.col-xs-6 [:h2 "Collection messages"]]
-      [:div.col-xs-4 [:br] (collections-combo)]]
+      [:div.col-xs-4 [:br] (collections-combo
+                             #(comm/exec-client :select-collection :id (data/get-non-buffer-collection-id (selected-index %)))
+                             data/get-selected-collection-name)]]
      [:div.row
       collection-buttons
       [:div.col-md-11

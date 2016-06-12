@@ -56,6 +56,8 @@
                  ;edited config
                  :edited-config                {}
                  :edited-connection-id         nil
+                 ;transfer
+                 :transfer-collection-id       nil
                  }))
 
 
@@ -79,6 +81,9 @@
 
 (defn get-selected-collection-name []
   (get-collection-name (get-selected-collection-id)))
+
+(defn get-transfer-collection-name []
+  (get-collection-name (:transfer-collection-id @web-data)))
 
 (defn non-buffer-collections []
   (filterv #(not= (:id %) :buffer) (:collections @config-data)))
@@ -132,7 +137,7 @@
   (swap! web-data assoc :expanded-collection-messages #{}))
 
 (defn get-checked-size [checked-set]
-    (count (checked-set @web-data)))
+  (count (checked-set @web-data)))
 
 ;(defn all-selected? [table-data checked-set-name]
 ;  (let [checked-size (get-checked-size  (checked-set-name table-data) )
@@ -173,10 +178,24 @@
          :edited-connection-idx (if (empty? (:connections @config-data)) nil 0)
          ))
 
+(defn copy-current-collection-id []
+  (swap! web-data #(assoc % :transfer-collection-id (:selected-collection-id %))))
+
+(defn check-selection! []
+  (if-let [checked-msg-id (first (:checked-collections-messages @web-data))]
+    (if (not (in? (map :id (filtered-collection-messages)) checked-msg-id))
+      (swap! web-data assoc :checked-collections-messages #{}))))
+
+(defn check-expanded! []
+  (let [expanded-collection-id-list (:expanded-collection-messages @web-data)
+        all-id-list (map :id (filtered-collection-messages))]
+    (doall (for [msg-id expanded-collection-id-list
+                 :when (not (in? all-id-list msg-id))]
+             (swap! web-data update :expanded-collection-messages disj msg-id)))))
+
+(defn check-all! []
+  (check-selection!)
+  (check-expanded!))
 
 ; scan if selected messge visible
-(add-watch web-data :collection-filter
-           #(if-let [checked-msg-id (first (:checked-collections-messages @web-data))]
-             (if (not (in? (map :id (filtered-collection-messages)) checked-msg-id))
-               (swap! web-data assoc :checked-collections-messages #{})
-               )))
+(add-watch web-data :collection-filter check-all!)
