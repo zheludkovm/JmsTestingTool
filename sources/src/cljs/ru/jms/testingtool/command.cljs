@@ -12,6 +12,10 @@
 ;--------------------
 ;process server commands
 
+(defn add-notify [message level]
+  (notify/notify message :type level :delay 2000)
+  )
+
 (defmethod process-client-command ::init [{config :config}]
   (reset! data/config-data (m/map->ConfigType config))
   (swap! data/web-data assoc
@@ -29,11 +33,7 @@
   (m/init-messages! data/messages-data collection-id messages)
   (data/validate-current-page-number!)
   (if (= collection-id :buffer)
-    (swap! data/web-data assoc :checked-buffer-messages #{}))
-  (if (> (count messages) 0)
-    (let [log-message (str "receive " (count messages) " messages into collection " (data/get-collection-name collection-id))]
-      (notify/notify log-message :type :info :delay 2000)
-      (add-log-entry! log-message))))
+    (add-notify (str "receive " (count messages) " messages") :info)))
 
 (defmethod process-client-command ::remove-messages [{id-list :id-list collection-id :collection-id}]
   (m/remove-messages! data/messages-data collection-id id-list)
@@ -51,9 +51,7 @@
     (browse-queue!)))
 
 (defmethod process-client-command ::add-log-entry [{message :message level :level}]
-  (let [log-entries (:log-entries @data/web-data)
-        updated-log-entries (conj log-entries {:time (js/Date.) :text message :level level})]
-    (swap! data/web-data assoc :log-entries updated-log-entries)))
+  (add-notify message level))
 
 (defmethod process-client-command ::select-collection [{id :id}]
   (data/select-collection! id))
@@ -73,8 +71,8 @@
 (defmethod process-client-command ::collapse-message [{message-id :message-id expanded-set :expanded-set}]
   (swap! data/web-data update-in [expanded-set] disj message-id))
 
-(defmethod process-client-command ::collapse-expand-all [{table-data :table-data}]
-  (data/select-deselect-all! table-data :expanded-set))
+(defmethod process-client-command ::collapse-expand-all [{all-messages-func :all-messages-func expanded-set :expanded-set }]
+  (data/select-deselect-all! all-messages-func expanded-set))
 
 (defmethod process-client-command ::check-message [{message-id :message-id checked-set-symb :checked-set}]
   (let [checked-set (checked-set-symb @data/web-data)
@@ -95,8 +93,7 @@
         message (m/get-message data/messages-data collection-id message-id)]
     (swap! data/web-data assoc :edited-message message)))
 
-(defmethod process-client-command ::select-deselect-all [{table-data :table-data}]
-  (data/select-deselect-all! table-data :checked-set))
+
 
 (defmethod process-client-command ::pager-action [{action :action}]
   (let [current-page (:buffer-page @data/web-data)
@@ -158,7 +155,6 @@
 ;first init
 
 (defn browse-queue! []
-  (add-log-entry! "awaiting messages from queue")
   (send-command! {:direction     :server
                   :command       ::browse-queue
                   :connection-id (:selected-connection-id @data/web-data)

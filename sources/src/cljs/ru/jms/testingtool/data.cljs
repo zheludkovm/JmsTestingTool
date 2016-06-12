@@ -131,22 +131,20 @@
   (swap! web-data assoc :checked-collections-messages #{})
   (swap! web-data assoc :expanded-collection-messages #{}))
 
-(defn get-checked-size [table-data checked-set-name]
-  (let [checked-set (checked-set-name table-data)]
-    (count (checked-set @web-data))))
+(defn get-checked-size [checked-set]
+    (count (checked-set @web-data)))
 
-(defn all-selected? [table-data checked-set-name]
-  (let [checked-size (get-checked-size table-data checked-set-name)
-        all-size (count ((:all-messages-func table-data)))]
-    (and (not= all-size 0) (= all-size checked-size))))
+;(defn all-selected? [table-data checked-set-name]
+;  (let [checked-size (get-checked-size  (checked-set-name table-data) )
+;        all-size (count ((:all-messages-func table-data)))]
+;    (and (not= all-size 0) (= all-size checked-size))))
 
-(defn has-selected? [table-data checked-set-name]
-  (not= 0 (get-checked-size table-data checked-set-name)))
+(defn has-selected? [checked-set]
+  (not= 0 (get-checked-size checked-set)))
 
-(defn select-deselect-all! [table-data checked-set-name]
-  (let [checked-set (checked-set-name table-data)
-        all-id-set (set (map :id ((:all-messages-func table-data))))]
-    (if (not (has-selected? table-data checked-set-name))
+(defn select-deselect-all! [all-messages-func checked-set]
+  (let [all-id-set (set (map :id (all-messages-func)))]
+    (if (not (has-selected? checked-set))
       (swap! web-data assoc checked-set all-id-set)
       (swap! web-data assoc checked-set #{}))))
 

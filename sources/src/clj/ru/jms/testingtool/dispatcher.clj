@@ -13,7 +13,7 @@
   (send-to-client! sender-id [(:command command) command]))
 
 (defn process-error [e message]
-  (send-command! {:direction :client :command (keyword "ru.jms.testingtool.command" "add-log-entry") :message message :level "alert-danger"})
+  (send-command! {:direction :client :command (keyword "ru.jms.testingtool.command" "add-log-entry") :message message :level :warning})
   (throw e))
 
 (defmethod send-command! :server [command]

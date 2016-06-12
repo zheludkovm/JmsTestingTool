@@ -42,12 +42,11 @@
       (empty? (:short-title msg))
       (reduce #(or %1 (validate-header? %2) (empty? (:name %2))) false (:headers msg)))))
 
-(defn select-message-func [id-msg table-info]
-  #(comm/exec-client :check-message :message-id id-msg :checked-set (:checked-set table-info)))
+(defn select-message-func [id-msg checked-set]
+  #(comm/exec-client :check-message :message-id id-msg :checked-set checked-set))
 
-(defn make-message-checkbox [id-msg table-data]
-  (let [checked-set (:checked-set table-data)
-        checked (contains? (checked-set @data/web-data) id-msg)]
+(defn make-message-checkbox [id-msg checked-set]
+  (let [checked (contains? (checked-set @data/web-data) id-msg)]
     [:span {:class (if checked "glyphicon glyphicon-check" "glyphicon glyphicon-unchecked")}]))
 
 (defn collections-combo []
@@ -58,22 +57,28 @@
              {:key (:id collection)}
              (:name collection)]))])
 
-(defn make-selection-header-checkbox [table-data]
-  [:span.glyphicon {:class    (cond
-                                (data/all-selected? table-data :checked-set) "glyphicon-check"
-                                (data/has-selected? table-data :checked-set) "glyphicon-check gray"
-                                :else "glyphicon-unchecked")
-                    :on-click #(comm/exec-client :select-deselect-all :table-data table-data)}])
+;(defn make-selection-header-checkbox [table-data]
+;  [:span.glyphicon {:class    (cond
+;                                (data/all-selected? table-data :checked-set) "glyphicon-check"
+;                                (data/has-selected? table-data :checked-set) "glyphicon-check gray"
+;                                :else "glyphicon-unchecked")
+;                    :on-click #(comm/exec-client :select-deselect-all :table-data table-data)}])
 
-(defn make-collapse-expand-button [messages table-data]
+(defn make-collapse-expand-button [messages extanded-set all-messages-func]
   [:span.glyphicon.btn.btn-block {:class    (cond
                                               (empty? messages) "glyphicon-zoom-out disabled btn-default"
-                                              (data/has-selected? table-data :expanded-set) " btn-primary glyphicon-zoom-out"
+                                              (data/has-selected? extanded-set) " btn-primary glyphicon-zoom-out"
                                               :else " btn-primary glyphicon-zoom-in")
-                                  :on-click #(comm/exec-client :collapse-expand-all :table-data table-data)}])
+                                  :on-click #(comm/exec-client :collapse-expand-all :all-messages-func all-messages-func :expanded-set extanded-set)}])
 
-(defn make-header-filter [table-data]
-  [bind-fields [:input.rounded {:field :text :id (:message-column-filter table-data)}] data/web-data])
+(defn row-collapse-button [id-msg expanded-set]
+  (make-simple-button "Collapse" "glyphicon-zoom-out" #(comm/exec-client :collapse-message :message-id id-msg :expanded-set expanded-set) gray-block-button))
+
+(defn row-expand-button [id-msg expanded-set]
+  (make-simple-button "Expand" "glyphicon-zoom-in" #(comm/exec-client :expand-message :message-id id-msg :expanded-set expanded-set) gray-block-button))
+
+(defn make-header-filter [message-column-filter]
+  [bind-fields [:input.rounded {:field :text :id message-column-filter}] data/web-data])
 
 (defn add-edit-properties []
   [:div.form-horizontal
@@ -135,7 +140,6 @@
      ]
     {:size :lg}))
 
-
 (defn connections-part []
   [:div.col-md-2
    [:h3 "Connections " [make-simple-button "Edit config" "glyphicon-wrench" #(do (data/prepare-config-for-edit!)
@@ -148,10 +152,7 @@
              ^{:key connection-id}
              [:div.add-margin-down
               [:span.h4 {:on-click #(comm/exec-client :expand-connection :connection-id connection-id)}
-               (make-simple-button "Expand"
-                                   (if is-expanded "glyphicon-zoom-out" "glyphicon-zoom-in")
-                                   #()
-                                   "btn btn-default btn-sm")
+               (make-simple-button "Expand" (if is-expanded "glyphicon-zoom-out" "glyphicon-zoom-in") #() "btn btn-default btn-sm")
                " "
                [:span.disable-selection (:title connection)]]
               (if is-expanded
@@ -176,57 +177,56 @@
     (if (some? type)
       [:label.col-sm-1.control-label (name type)])]))
 
-(defn table-row-collapsed [id-msg msg table-data]
-  (let [show-selection (:show-selection table-data)
-        select-msg-props (if show-selection {:on-click (select-message-func id-msg table-data)} {})]
+(defn table-row-collapsed [id-msg msg]
+  (let [select-msg-props {:on-click (select-message-func id-msg :checked-collections-messages)}]
     ^{:key id-msg}
     [:tr
-     (if (:show-selection table-data)
-       [:td.col-md-1 select-msg-props [make-message-checkbox id-msg table-data]])
+     [:td.col-md-1 select-msg-props [make-message-checkbox id-msg :checked-collections-messages]]
      [:td.col-md-1 select-msg-props (:short-title msg)]
      [:td.col-md-1 select-msg-props (name (:type msg))]
-     [:td.col-md-1 (make-simple-button "Expand"
-                                       "glyphicon-zoom-in"
-                                       #(comm/exec-client :expand-message :message-id id-msg :expanded-set (:expanded-set table-data))
-                                       gray-block-button)]]))
+     [:td.col-md-1 (row-expand-button id-msg :expanded-collection-messages)]]))
 
-(defn table-row-expanded [id-msg msg table-data]
-  (let [select-msg-f (select-message-func id-msg table-data)
-        show-selection (:show-selection table-data)]
+(defn buffer-row-collapsed [id-msg msg]
+  ^{:key id-msg}
+  [:tr
+   [:td.col-md-1 (:short-title msg)]
+   [:td.col-md-1 (name (:type msg))]
+   [:td.col-md-1 (row-expand-button id-msg :expanded-buffer-messages)]])
+
+(defn standard-expanded-part [id-msg msg ext-property]
+  [:div.container-fluid
+   [:div.form-horizontal
+    ext-property
+    [gen-property " correlation id " (:jmsCorrelationId msg) nil]
+    [gen-property " priority " (:jmsPriority msg) nil]
+    [gen-property " reply to " (:jmsReplyTo msg) nil]
+    (if (seq (:headers msg))
+      [:div.form-group [:label.col-sm-3.control-label " properties : "]])
+    (for [[idx hdr] (with-index (:headers msg))]
+      ^{:key (str id-msg idx)}
+      [gen-property (:name hdr) (:value hdr) (:type hdr) (str id-msg idx)])]
+   [:textarea.form-control {:rows " 4 " :disabled " disabled " :value (:long-title msg)}]])
+
+(defn collection-row-expanded [id-msg msg]
+  (let [select-msg-f (select-message-func id-msg :checked-collections-messages)]
     ^{:key id-msg}
     [:tr
-     (if show-selection [:td {:on-click select-msg-f} [make-message-checkbox id-msg table-data]])
-     [:td {:col-span 2 :on-click (if show-selection select-msg-f #())}
-      [:div.container-fluid
-       [:div.form-horizontal
-        (if-not (:is-editable table-data)
-          [gen-property " jms message id " (:jmsMessageId msg) nil]
-          [gen-property " title " (:short-title msg) nil])
-        [gen-property " correlation id " (:jmsCorrelationId msg) nil]
-        [gen-property " priority " (:jmsPriority msg) nil]
-        [gen-property " reply to " (:jmsReplyTo msg) nil]
-        ;gen headers part
-        (if (seq (:headers msg))
-          [:div.form-group [:label.col-sm-3.control-label " properties : "]])
-        (for [[idx hdr] (with-index (:headers msg))]
-          ^{:key (str id-msg idx)}
-          [gen-property (:name hdr) (:value hdr) (:type hdr) (str id-msg idx)])]
-       ;end headers part
-       [:textarea.form-control {:rows " 4 " :disabled " disabled " :value (:long-title msg)}]]]
+     [:td {:on-click select-msg-f} (make-message-checkbox id-msg :checked-collections-messages)]
+     [:td {:col-span 2 :on-click select-msg-f}
+      (standard-expanded-part id-msg msg [gen-property " title " (:short-title msg) nil])]
      [:td
-      [make-simple-button
-       "Collapse" "glyphicon-zoom-out"
-       #(comm/exec-client :collapse-message :message-id id-msg :expanded-set (:expanded-set table-data))
-       gray-block-button]
-      (if (:is-editable table-data)
-        [:div
-         [make-simple-button "Edit" "glyphicon-wrench"
-          #(do (comm/exec-client :init-edit-message :message-id id-msg) (show-edit-message-dialog))
-          gray-block-button]
-         [make-simple-button "Remove" "glyphicon-trash"
-          (fn [] (show-confirm-dialog "Remove selected messages?" #(comm/remove-selected-messages id-msg))) danger-button-block]]
-        [make-simple-button "To collection" "glyphicon-download-alt" #(comm/move-buffer-to-collection id-msg) gray-block-button]
-        )]]))
+      (row-collapse-button id-msg :expanded-collection-messages)
+      (make-simple-button "Edit" "glyphicon-wrench" #(do (comm/exec-client :init-edit-message :message-id id-msg) (show-edit-message-dialog)) gray-block-button)
+      (make-simple-button "Remove" "glyphicon-trash" (fn [] (show-confirm-dialog "Remove selected messages?" #(comm/remove-selected-messages id-msg))) danger-button-block)]]))
+
+(defn buffer-row-expanded [id-msg msg]
+  ^{:key id-msg}
+  [:tr
+   [:td {:col-span 2}
+    (standard-expanded-part id-msg msg [gen-property " jms message id " (:jmsMessageId msg) nil])]
+   [:td
+    (row-collapse-button id-msg :expanded-buffer-messages)
+    (make-simple-button "To collection" "glyphicon-download-alt" #(comm/move-buffer-to-collection id-msg) gray-block-button)]])
 
 (defn show-pager []
   [:div.row
@@ -245,93 +245,75 @@
   [:div.col-md-1.column-auto
    [make-simple-button "Get" "glyphicon-refresh" check-queue-selection? comm/browse-queue! "btn btn-primary middle-button"]
    [:br]
-   [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]
-   ])
+   [make-simple-button "Clean queue" "glyphicon-trash" check-queue-selection? #(show-confirm-dialog "Clean message queue?" comm/purge-queue) danger-button]])
 
 (def collection-buttons
   [:div.col-sm-1.column-auto
    [make-simple-button "Send message to queue!" "glyphicon-flash" check-selected-collection-messages-and-queue? #(do
-                                                                                                             (comm/send-messages)
-                                                                                                             (notify/notify "Send message!" :type :warning :delay 2000)
-                                                                                                             ) green-button]
+                                                                                                                  (comm/send-messages)
+                                                                                                                  (comm/exec-client :add-log-entry :message "Send message!" :level :warning)
+                                                                                                                  ) green-button]
    [:br]
    [make-simple-button "Add new message" "glyphicon-plus" #(do (comm/exec-client :init-add-message)
                                                                (show-edit-message-dialog))]])
 
-(def buffer-table {
-                   :messages-func         data/paged-buffer-messages
-                   :all-messages-func     data/filtered-buffer-messages
-                   :header                "Buffer"
-                   :show-collection-combo false
-                   :buttons               buffer-buttons
-                   :message-column-header "message"
-                   :checked-set           :checked-buffer-messages
-                   :message-column-filter :buffer-filter
-                   :expanded-set          :expanded-buffer-messages
-                   :is-editable           false
-                   :show-pager            true
-                   :show-selection        false
-                   })
+(defn messages-list [expanded-set messages render-collapsed-row render-expanded-row]
+  (let [expanded-messages (expanded-set @data/web-data)]
+    (doall (for [msg messages
+                 :let [id-msg (:id msg)]]
+             (if (not (contains? expanded-messages id-msg))
+               (render-collapsed-row id-msg msg)
+               (render-expanded-row id-msg msg))))))
 
-(def collection-table {
-                       :messages-func         data/filtered-collection-messages
-                       :all-messages-func     data/filtered-collection-messages
-                       :header                "Collection messages"
-                       :show-collection-combo true
-                       :buttons               collection-buttons
-                       :message-column-header "title"
-                       :checked-set           :checked-collections-messages
-                       :message-column-filter :collection-filter
-                       :expanded-set          :expanded-collection-messages
-                       :is-editable           true
-                       :show-pager            false
-                       :show-selection        true})
-
-(defn messages-table-part [table-data]
-  (let [expanded-messages ((:expanded-set table-data) @data/web-data)
-        messages ((:messages-func table-data))
-        show-selection (:show-selection table-data)
-        ]
+(defn collection-table-part []
+  (let [messages (data/filtered-collection-messages)]
     [:div.container-fluid
      [:div.row
       [:div.col-sm-1]
-      [:div.col-xs-6
-       [:h2 (:header table-data)]]
-      [:div.col-xs-4
-       [:br]
-       (if (:show-collection-combo table-data) (collections-combo))
-       (if (and (:show-pager table-data) (> (data/total-buffer-pages) 1)) (show-pager))]]
+      [:div.col-xs-6 [:h2 "Collection messages"]]
+      [:div.col-xs-4 [:br] (collections-combo)]]
      [:div.row
-      (:buttons table-data)
+      collection-buttons
       [:div.col-md-11
        [:table.table
         [:thead
          [:tr
-          (if show-selection
-            ;[:th.col-md-1 (make-selection-header-checkbox table-data)]
-            [:th.col-md-1]
-            )
-          [(if show-selection :th.col-md-7 :th.col-md-8) [:div [:span.add-margin-right (:message-column-header table-data)] [:span (make-header-filter table-data)]]]
+          [:th.col-md-1]
+          [:th.col-md-7 [:div [:span.add-margin-right "title"] [:span (make-header-filter :collection-filter)]]]
           [:th.col-md-1 " type "]
-          [:th.col-md-1 (make-collapse-expand-button messages table-data)]]]
+          [:th.col-md-1 (make-collapse-expand-button messages :expanded-collection-messages data/filtered-collection-messages)]]]
         [:tbody
-         (doall (for [msg messages
-                      :let [id-msg (:id msg)]]
-                  (if (not (contains? expanded-messages id-msg))
-                    (table-row-collapsed id-msg msg table-data)
-                    (table-row-expanded id-msg msg table-data)
-                    )))]]]]]))
+         (messages-list :expanded-collection-messages messages table-row-collapsed collection-row-expanded)]]]]]))
 
-(defn log-part []
-  [:div.col-md-20
-   [:h3.text-right " Log "]
-   [:ul.list-unstyled
-    (doall (for [item (:log-entries @data/web-data)]
-             (do ^{:key (.getTime (:time item))}
-                 [:li.text-right.alert.alert-info {:class (:level item)}
-                  [:small (str (:time item))]
-                  [:span " "]
-                  [:strong (:text item)]])))]])
+(defn buffer-table-part []
+  (let [messages (data/paged-buffer-messages)]
+    [:div.container-fluid
+     [:div.row
+      [:div.col-sm-1]
+      [:div.col-xs-6 [:h2 "Buffer"]]
+      [:div.col-xs-4 [:br] (if (> (data/total-buffer-pages) 1) (show-pager))]]
+     [:div.row
+      buffer-buttons
+      [:div.col-md-11
+       [:table.table
+        [:thead
+         [:tr
+          [:th.col-md-8 [:div [:span.add-margin-right "message"] [:span (make-header-filter :buffer-filter)]]]
+          [:th.col-md-1 " type "]
+          [:th.col-md-1 (make-collapse-expand-button messages :expanded-buffer-messages data/filtered-buffer-messages)]]]
+        [:tbody
+         (messages-list :expanded-buffer-messages messages buffer-row-collapsed buffer-row-expanded)]]]]]))
+
+;(defn log-part []
+;  [:div.col-md-20
+;   [:h3.text-right " Log "]
+;   [:ul.list-unstyled
+;    (doall (for [item (:log-entries @data/web-data)]
+;             (do ^{:key (.getTime (:time item))}
+;                 [:li.text-right.alert.alert-info {:class (:level item)}
+;                  [:small (str (:time item))]
+;                  [:span " "]
+;                  [:strong (:text item)]])))]])
 
 (defn home-page []
   [:div.container-fluid.root-container
@@ -342,9 +324,9 @@
    [:div.row
     (connections-part)
     [:div.container.col-md-10
-     [:div.row (messages-table-part buffer-table)]
+     [:div.row (buffer-table-part)]
      [:div.row [:hr]]
-     [:div.row (messages-table-part collection-table)]]]
+     [:div.row (collection-table-part)]]]
    [:div.page-footer
     [:div
      ;(log-part)
