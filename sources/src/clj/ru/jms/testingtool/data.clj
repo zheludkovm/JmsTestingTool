@@ -10,31 +10,29 @@
   m/MessagesStore
   (init-messages! [this collection-id messages]
     (if (= collection-id :buffer)
-      (reset! (:buffer this) messages)
-      (e/swap! (:store this) assoc-in [collection-id] messages)))
+      (reset! buffer messages)
+      (e/swap! store assoc-in [collection-id] messages)))
   (add-message! [this collection-id message]
     (if (not= collection-id :buffer)
-      (e/swap! (:store this) #(s/setval [(s/keypath collection-id) s/END] [message] %))))
+      (e/swap! store #(s/setval [(s/keypath collection-id) s/END] [message] %))))
   (update-message! [this collection-id message-id message]
-    (e/swap! (:store this) #(s/setval [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] message %)))
+    (e/swap! store #(s/setval [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] message %)))
   (get-messages [this collection-id]
     (if (= collection-id :buffer)
-      @(:buffer this)
-      (get @(:store this) collection-id)))
+      @buffer
+      (get @store collection-id)))
   (get-messages-list [this collection-id id-list]
     (if (= collection-id :buffer)
-      (s/select [(cu/ALL-GET-BY-ID-LIST id-list)] @(:buffer this))
-      (s/select [(s/keypath collection-id) (cu/ALL-GET-BY-ID-LIST id-list)] @(:store this))))
+      (s/select [(cu/ALL-GET-BY-ID-LIST id-list)] @buffer)
+      (s/select [(s/keypath collection-id) (cu/ALL-GET-BY-ID-LIST id-list)] @store)))
   (get-message [this collection-id message-id]
     (if (= collection-id :buffer)
-      (s/select-first [(cu/ALL-GET-BY-ID message-id)] @(:buffer this))
-      (s/select-first [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] @(:store this))))
+      (s/select-first [(cu/ALL-GET-BY-ID message-id)] @buffer)
+      (s/select-first [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] @store)))
   (remove-messages! [this collection-id id-list]
     (if (not= collection-id :buffer)
-      (let [store (:store this)
-            messages (get @store collection-id)
-            filtered-messages (remove #(contains? id-list (:id %)) messages)
-            ]
+      (let [messages (get @store collection-id)
+            filtered-messages (remove #(contains? id-list (:id %)) messages)]
         (e/swap! store assoc collection-id filtered-messages)))))
 
 (def config

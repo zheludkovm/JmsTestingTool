@@ -10,19 +10,19 @@
 (defrecord MessagesStoreType [store]
   m/MessagesStore
   (init-messages! [this collection-id messages]
-    (swap! (:store this) assoc-in [collection-id] messages))
+    (swap! store assoc-in [collection-id] messages))
   (add-message! [this collection-id message]
-    (swap! (:store this) #(s/setval [(s/keypath collection-id) s/END] [message] %)))
+    (swap! store #(s/setval [(s/keypath collection-id) s/END] [message] %)))
   (update-message! [this collection-id message-id message]
-    (swap! (:store this) #(s/setval [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] message %)))
+    (swap! store #(s/setval [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] message %)))
   (get-messages [this collection-id]
-    (get @(:store this) collection-id))
+    (get @store collection-id))
   (get-message [this collection-id message-id]
-    (s/select-first [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] @(:store this)))
+    (s/select-first [(s/keypath collection-id) (cu/ALL-GET-BY-ID message-id)] @store))
   (remove-messages! [this collection-id id-list]
     (let [messages (get @store collection-id)
           filtered-messages (remove #(contains? id-list (:id %)) messages)]
-      (swap! (:store this) assoc collection-id filtered-messages))))
+      (swap! store assoc collection-id filtered-messages))))
 
 (def config-data
   (reagent/atom
