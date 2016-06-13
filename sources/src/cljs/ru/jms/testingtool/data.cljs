@@ -4,7 +4,8 @@
             [ru.jms.testingtool.shared.model :as m]
             [com.rpl.specter :as s]
             [ru.jms.testingtool.shared.common-utils :as cu]
-            [ru.jms.testingtool.utils :as u]))
+            [ru.jms.testingtool.utils :as u]
+            [clojure.set :as set]))
 
 (defrecord MessagesStoreType [store]
   m/MessagesStore
@@ -175,8 +176,7 @@
 (defn prepare-config-for-edit! []
   (swap! web-data assoc
          :edited-config (into {} @config-data)
-         :edited-connection-idx (if (empty? (:connections @config-data)) nil 0)
-         ))
+         :edited-connection-idx (if (empty? (:connections @config-data)) nil 0)))
 
 (defn copy-current-collection-id []
   (swap! web-data #(assoc % :transfer-collection-id (:selected-collection-id %))))
@@ -188,10 +188,10 @@
 
 (defn check-expanded! []
   (let [expanded-collection-id-list (:expanded-collection-messages @web-data)
-        all-id-list (map :id (filtered-collection-messages))]
-    (doall (for [msg-id expanded-collection-id-list
-                 :when (not (in? all-id-list msg-id))]
-             (swap! web-data update :expanded-collection-messages disj msg-id)))))
+        all-id-list (map :id (filtered-collection-messages))
+        remove-msg-list (set (filter #(u/not-in? all-id-list %) expanded-collection-id-list))]
+    (if (not-empty remove-msg-list)
+      (swap! web-data update :expanded-collection-messages set/difference remove-msg-list))))
 
 (defn check-all! []
   (check-selection!)

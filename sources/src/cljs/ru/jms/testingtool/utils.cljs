@@ -3,7 +3,8 @@
   (:require [reagent-forms.core :as forms-core]
             [clojure.string :as str]
             [reagent.session :as session]
-            [reagent-modals.modals :as reagent-modals]))
+            [reagent-modals.modals :as reagent-modals]
+            [com.rpl.specter :as s]))
 
 (def gray-block-button "btn btn-default btn-block")
 (def gray-button "btn btn-default")
@@ -139,3 +140,8 @@
   "true if coll contains elm"
   [coll elm]
   (some #(= elm %) coll))
+
+(defn swap-transform! [a path f]
+  (swap! a #(s/transform path f %)))
+
+(def not-in? (complement in?))

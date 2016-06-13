@@ -1,5 +1,5 @@
 (ns ru.jms.testingtool.command
-  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property or-property vec-sort-by f-vec-remove f-conj]]
+  (:require [ru.jms.testingtool.utils :refer [js-println xor-assoc vec-remove gen-id or-property or-property vec-sort-by f-vec-remove f-conj swap-transform!] :as u]
             [ru.jms.testingtool.data :as data]
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
             [ru.jms.testingtool.shared.model :as m]
@@ -13,8 +13,7 @@
 ;process server commands
 
 (defn add-notify [message level]
-  (notify/notify message :type level :delay 2000)
-  )
+  (notify/notify message :type level :delay 2000))
 
 (defmethod process-client-command ::init [{config :config}]
   (reset! data/config-data (m/map->ConfigType config))
@@ -60,13 +59,10 @@
   (swap! data/web-data assoc :transfer-collection-id id))
 
 (defmethod process-client-command ::remove-message-header [{idx :idx}]
-  (let [headers (get-in @data/web-data [:edited-message :headers])
-        changed-headers (vec-remove headers idx)]
-    (swap! data/web-data assoc-in [:edited-message :headers] changed-headers)))
+  (u/swap-transform! data/web-data [:edited-message :headers] (u/f-vec-remove idx)))
 
 (defmethod process-client-command ::add-message-header [_]
-  (let [count (count (get-in @data/web-data [:edited-message :headers]))]
-    (swap! data/web-data assoc-in [:edited-message :headers count] {})))
+  (u/swap-transform! data/web-data [:edited-message :headers] (u/f-conj {})))
 
 (defmethod process-client-command ::expand-message [{message-id :message-id expanded-set :expanded-set}]
   (swap! data/web-data update-in [expanded-set] conj message-id))
@@ -74,7 +70,7 @@
 (defmethod process-client-command ::collapse-message [{message-id :message-id expanded-set :expanded-set}]
   (swap! data/web-data update-in [expanded-set] disj message-id))
 
-(defmethod process-client-command ::collapse-expand-all [{all-messages-func :all-messages-func expanded-set :expanded-set }]
+(defmethod process-client-command ::collapse-expand-all [{all-messages-func :all-messages-func expanded-set :expanded-set}]
   (data/select-deselect-all! all-messages-func expanded-set))
 
 (defmethod process-client-command ::check-message [{message-id :message-id checked-set-symb :checked-set}]
@@ -82,11 +78,6 @@
         is-checked (not (contains? checked-set message-id))
         new-checked-set (if is-checked #{message-id} #{})]
     (swap! data/web-data assoc checked-set-symb new-checked-set)))
-;(let [checked-set (checked-set-symb @data/web-data)
-;      is-checked (not (contains? checked-set message-id))
-;      op (if is-checked conj disj)
-;      new-checked-set (op checked-set message-id)]
-;  (swap! data/web-data assoc checked-set-symb new-checked-set)))
 
 (defmethod process-client-command ::init-add-message [_]
   (swap! data/web-data assoc :edited-message {:type :string :headers []}))
@@ -95,8 +86,6 @@
   (let [collection-id (data/get-selected-collection-id)
         message (m/get-message data/messages-data collection-id message-id)]
     (swap! data/web-data assoc :edited-message message)))
-
-
 
 (defmethod process-client-command ::pager-action [{action :action}]
   (let [current-page (:buffer-page @data/web-data)
@@ -112,39 +101,34 @@
   (swap! data/web-data assoc :edited-connection-idx idx))
 
 (defmethod process-client-command ::add-new-connection [_]
-  (let [count (count (get-in @data/web-data [:edited-config :connections]))]
-    (swap! data/web-data assoc-in [:edited-config :connections count] {:id (gen-id) :type :activemq :title "new connection" :browse-type :browser :queues []})))
+  (let [new-connection {:id (u/gen-id) :type :activemq :title "new connection" :browse-type :browser :queues []}]
+    (u/swap-transform! data/web-data [:edited-config :connections] (u/f-conj new-connection))))
 
 (defmethod process-client-command ::remove-selected-connection []
-  (let [idx (:edited-connection-idx @data/web-data)
-        filtered-connections (vec-remove (get-in @data/web-data [:edited-config :connections]) idx)]
-    (swap! data/web-data assoc-in [:edited-config :connections] filtered-connections)
+  (let [connection-idx (:edited-connection-idx @data/web-data)]
+    (u/swap-transform! data/web-data [:edited-config :connections] (u/f-vec-remove connection-idx))
     (swap! data/web-data assoc-in [:edited-connection-idx] nil)))
 
 (defmethod process-client-command ::add-new-queue [_]
-  (let [idx (:edited-connection-idx @data/web-data)
-        count (count (get-in @data/web-data [:edited-config :connections idx :queues]))]
-    (swap! data/web-data assoc-in [:edited-config :connections idx :queues count] {:id (gen-id) :name "new queue"})))
+  (let [connection-idx (:edited-connection-idx @data/web-data)]
+    (u/swap-transform! data/web-data [:edited-config :connections (s/keypath connection-idx) :queues] (u/f-conj {:id (u/gen-id) :name "new queue"}))))
 
 (defmethod process-client-command ::remove-edited-queue [{idx :idx}]
-  (let [connection-idx (:edited-connection-idx @data/web-data)
-        queues (get-in @data/web-data [:edited-config :connections connection-idx :queues])
-        filtered-queues (vec-remove queues idx)]
-    (swap! data/web-data assoc-in [:edited-config :connections connection-idx :queues] filtered-queues)))
+  (let [connection-idx (:edited-connection-idx @data/web-data)]
+    (u/swap-transform! data/web-data [:edited-config :connections (s/keypath connection-idx) :queues] (u/f-vec-remove idx))))
 
 (defmethod process-client-command ::add-collection [_]
-  (let [new-collection {:id (gen-id) :name "new collection"}]
-    (swap! data/web-data #(s/transform [:edited-config :collections] (f-conj new-collection) %))))
+  (let [new-collection {:id (u/gen-id) :name "new collection"}]
+    (u/swap-transform! data/web-data [:edited-config :collections] (u/f-conj new-collection))))
 
 (defmethod process-client-command ::remove-collection [{idx :idx}]
-  (swap! data/web-data #(s/transform [:edited-config :collections] (f-vec-remove idx) %)))
+  (u/swap-transform! data/web-data [:edited-config :collections] (u/f-vec-remove idx)))
 
 (defmethod process-client-command ::expand-connection [{connection-id :connection-id}]
   (swap! data/web-data assoc
          :selected-connection-id nil
          :selected-queue-id nil)
   (xor-assoc data/web-data :expanded-connection-id connection-id))
-
 
 ;------------------------
 ;gen commands
@@ -201,8 +185,8 @@
   (send-command! {:direction :server
                   :command   ::save-config
                   :config    (->> (:edited-config @data/web-data)
-                                  (s/transform [:connections s/ALL :queues] (fn [coll] (vec-sort-by #(or-property % :title :name) coll)))
-                                  (s/transform [:connections] #(vec-sort-by :title %))
+                                  (s/transform [:connections s/ALL :queues] (fn [coll] (u/vec-sort-by #(u/or-property % :title :name) coll)))
+                                  (s/transform [:connections] #(u/vec-sort-by :title %))
                                   )}))
 
 (defn exec-client [command & params]
@@ -211,8 +195,8 @@
                        (map vec (partition 2 params)))))
 
 (defn transfer-message [id-msg]
-  (send-command! {:direction     :server
-                  :command       ::transfer-message-to-collection
-                  :id-msg       id-msg
+  (send-command! {:direction          :server
+                  :command            ::transfer-message-to-collection
+                  :id-msg             id-msg
                   :from-collection-id (:selected-collection-id @data/web-data)
-                  :to-collection-id (:transfer-collection-id @data/web-data)}))
+                  :to-collection-id   (:transfer-collection-id @data/web-data)}))
