@@ -187,6 +187,7 @@
                   :config    (->> (:edited-config @data/web-data)
                                   (s/transform [:connections s/ALL :queues] (fn [coll] (u/vec-sort-by #(u/or-property % :title :name) coll)))
                                   (s/transform [:connections] #(u/vec-sort-by :title %))
+                                  (s/transform [:collections] #(u/vec-sort-by :name %))
                                   )}))
 
 (defn exec-client [command & params]
