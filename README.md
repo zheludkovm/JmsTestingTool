@@ -10,6 +10,8 @@ This tool intended to work with JMS :
 
 Screenshots :
 
-![Main window](/readme-ext/main-window.png?raw=true)
+![Main window](/readme-ext/main-window.png)
 
-![Edit message](/readme-ext/edit-message.png?raw=true)
+![Edit message](/readme-ext/edit-message.png)
+
+![Config](/readme-ext/config.png)
