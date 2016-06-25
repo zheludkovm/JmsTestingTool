@@ -11,13 +11,15 @@ This tool intended to work with JMS :
 ##Installation
 
 git clone https://github.com/zheludkovm/JmsTestingTool.git
+
 cd JmsTestingTool/build
+
 ./run-server.sh
 
 Open browser url  http://localhost:3000
 
 
-Screenshots :
+###Screenshots :
 
 ![Main window](/readme-ext/main-window.png)
 
