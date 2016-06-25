@@ -1,4 +1,4 @@
-JMS Testing tool
+#JMS Testing tool
 
 This tool intended to work with JMS :
 
@@ -7,6 +7,15 @@ This tool intended to work with JMS :
 - store persistent message collections
 
 - observe queue messages
+
+##Installation
+
+git clone https://github.com/zheludkovm/JmsTestingTool.git
+cd JmsTestingTool/build
+./run-server.sh
+
+Open browser url  http://localhost:3000
+
 
 Screenshots :
 
