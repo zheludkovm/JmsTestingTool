@@ -41,10 +41,7 @@
       (include-js "js/jquery-2.1.1.min.js")
       (include-js "js/bootstrap.min.js")
       [:div#app
-       [:h3 "ClojureScript has not been compiled!"]
-       [:p "please run "
-        [:b "lein figwheel"]
-        " in order to start the compiler"]]
+       [:h3 "Starting application..."]]
       (include-js "js/app.js")]]))
 
 (defroutes routes
