@@ -28,6 +28,16 @@
                                :constructor-parameters []
                                :init-calls             {"setBrokerURI" [(str "tcp://" host ":" port)]}})}
 
+   :amqp {:title       "AMQP"
+               :comment     "AMQP QPID client"
+               :browse-type :browser
+               :fields      [{:name "remote URI (amqp://host:port)" :field :remoteURI :type :string :not-null true}]
+               :init-fn     (fn [{remoteURI :remoteURI }]
+                              {:class                  "org.apache.qpid.jms.JmsConnectionFactory"
+                               :constructor-parameters []
+                               :init-calls             {
+                                                        "setRemoteURI" [remoteURI]
+                                                        }})}
    :mq-series {:title       "IBM MQ"
                :comment     "IBM MQ Series"
                :browse-type :browser
@@ -42,10 +52,10 @@
                                :constructor-parameters []
                                :init-calls             {
                                                         "setHostName" [host]
-                                                        "setPort" [(Integer. port)]
+                                                        "setPort" [(read-string port)]
                                                         "setChannel" [channel]
                                                         "setQueueManager" [queueManager]
-                                                        "setCCSID" [(Integer. ccsid)]
+                                                        "setCCSID" [(read-string ccsid)]
                                                         "setTransportType" [1]
                                                         }})}
    })

@@ -25,10 +25,12 @@
                  [org.clojars.frozenlock/reagent-modals "0.2.3"]
                  [com.rpl/specter "0.9.2"]
                  [alandipert/enduro "1.2.0"]
-                 [org.apache.activemq/activemq-client "5.13.2"]
-                 [org.fusesource.stompjms/stompjms-client "1.19"]
                  [json-html "0.3.5"]
                  [thinktopic/raven "0.1.2"]
+
+                 [org.apache.activemq/activemq-client "5.13.2"]
+                 [org.fusesource.stompjms/stompjms-client "1.19"]
+                 [org.apache.qpid/qpid-jms-client "0.9.0"]
                  ]
 
   :plugins [[lein-environ "1.0.0"]
