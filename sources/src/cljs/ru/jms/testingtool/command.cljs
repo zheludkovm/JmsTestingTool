@@ -101,8 +101,10 @@
   (swap! data/web-data assoc :edited-connection-idx idx))
 
 (defmethod process-client-command ::add-new-connection [_]
-  (let [new-connection {:id (u/gen-id) :type :activemq :title "new connection" :browse-type :browser :queues []}]
-    (u/swap-transform! data/web-data [:edited-config :connections] (u/f-conj new-connection))))
+  (let [new-connection {:id (u/gen-id) :type :activemq :title "new connection" :browse-type :browser :queues []}
+        idx (count (get-in @data/web-data [:edited-config :connections]))]
+    (u/swap-transform! data/web-data [:edited-config :connections] (u/f-conj new-connection))
+    (swap! data/web-data assoc-in [:edited-connection-idx] idx)))
 
 (defmethod process-client-command ::remove-selected-connection []
   (let [connection-idx (:edited-connection-idx @data/web-data)]
