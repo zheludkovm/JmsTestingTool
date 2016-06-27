@@ -72,9 +72,7 @@ Open browser url  http://localhost:3000
    
   > :queues[{:name "queue1", :title "queu1", :id :test-queue1}]}
 
-###Screenshots :
-
-![Main window](/readme-ext/main-window.png)
+###Additional screenshots :
 
 ![Edit message](/readme-ext/edit-message.png)
 
