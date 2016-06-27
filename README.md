@@ -31,6 +31,8 @@ Open browser url  http://localhost:3000
 ###Supported JMS Providers
 
 - Active MQ http://activemq.apache.org/
+ 
+- AMQP https://qpid.apache.org/components/jms/
 
 - Stomp protocol https://github.com/fusesource/stompjms
 
