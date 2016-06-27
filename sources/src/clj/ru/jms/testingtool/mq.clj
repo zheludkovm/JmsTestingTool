@@ -8,7 +8,9 @@
   ([connection-info ack-mode]
    (try
      (let [^QueueConnectionFactory qcf (create-qcf connection-info)
-           ^Connection q (.createConnection qcf)
+           ^Connection q (if (clojure.string/blank? (:user connection-info))
+                           (.createConnection qcf)
+                           (.createConnection qcf (:user connection-info) (:password connection-info)))
            _ (.start q)]
        (.createSession q false ack-mode))
      (catch Exception e
@@ -151,7 +153,7 @@
         ^MessageProducer producer (.createProducer s q)]
     (doall (for [message messages
                  :let [mq-message (convert-message-to-mq s message)]]
-             (.send producer q mq-message)))
+             (.send producer mq-message)))
     (.close producer)
     (.close s)))
 

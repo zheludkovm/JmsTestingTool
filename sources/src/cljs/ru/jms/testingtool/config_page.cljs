@@ -38,7 +38,7 @@
         ;has-empty-queue-titles (has-empty-field queues :title)
         has-empty-queue-names (has-empty-field queues :name)
         has-incorrect-field (has-true? #(check-field % connection) (:fields provider-info))]
-    (or has-empty-queue-names  has-incorrect-field has-empty-title)))
+    (or has-empty-queue-names has-incorrect-field has-empty-title)))
 
 (defn is-all-ok? []
   (let [edited-config (:edited-config @data/web-data)
@@ -56,7 +56,7 @@
        [:div.col-xs-4.nomargin
         [:input.form-control {:field :input-validated :id :name :validate-func empty? :error-class "alert-danger"}]]
        [:div.col-md-5
-        [make-simple-button "Remove collection" "glyphicon-minus"  #(comm/exec-client :remove-collection :idx idx) danger-button]]]
+        [make-simple-button "Remove collection" "glyphicon-minus" #(comm/exec-client :remove-collection :idx idx) danger-button]]]
       collection-cursor])])
 
 (defn add-connections-list []
@@ -85,7 +85,7 @@
      [bind-fields
       [:div.form-group
        [:div.col-xs-4 [:input.form-control {:field :input-validated :id :name :validate-func empty? :error-class "alert-danger"}]]
-       [:div.col-xs-4 [:input.form-control {:field :input-validated  :id :title :validate-func empty? :error-class "grayBackground" }]]
+       [:div.col-xs-4 [:input.form-control {:field :input-validated :id :title :validate-func empty? :error-class "grayBackground"}]]
        [:div.col-md-1 [make-simple-button "Remove property" "glyphicon-minus" #(comm/exec-client :remove-edited-queue :idx idx) danger-button]]]
       queue-cursor])
    [:div.form-group
@@ -117,7 +117,9 @@
        [:div.row (row "Title" [:input.form-control {:field :input-validated :id :title :validate-func empty? :error-class "alert-danger"}])]
        [:div.row (row "Type" [:select.form-control {:field :list :id :type}
                               (for [[key provider] mq_providers/providers]
-                                [:option {:key key} (:title provider)])])]]
+                                [:option {:key key} (:title provider)])])]
+       [:div.row (row "Login" [:input.form-control {:field :text :id :user}])]
+       [:div.row (row "Password" [:input.form-control {:field :text :id :password}])]]
       connection-cursor]
      (if (= :generic (:type @connection-cursor))
        [:div.form-horizontal
@@ -128,7 +130,7 @@
      [:div.row.h4 "Queues:"]
      (add-queues-list connection-cursor)]))
 
-(defn save-and-close[]
+(defn save-and-close []
   (comm/save-config!)
   (switch-page! :home-page)
   )
