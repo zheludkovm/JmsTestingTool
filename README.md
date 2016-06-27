@@ -7,6 +7,8 @@ This tool intended to work with JMS :
 - store persistent message collections
 
 - observe queue messages
+ 
+<img src="/readme-ext/main-window.png" width="500" height="300" />
 
 ##Installation
 
