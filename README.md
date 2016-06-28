@@ -36,6 +36,8 @@ Open browser url  http://localhost:3000
 
 - Stomp protocol https://github.com/fusesource/stompjms
 
+- Artemis https://activemq.apache.org/artemis/
+
 - IBM MQ http://www-03.ibm.com/software/products/ru/ibm-mq
 
   (you should download ibm mq client jars from ibm site and extract to directory build/lib-ext)
