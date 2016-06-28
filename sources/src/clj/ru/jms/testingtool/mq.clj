@@ -62,6 +62,20 @@
                                    )
     :else (throw (IOException. (str "Not supported message class!" (.getClass msg))))))
 
+(defn get-type[v]
+  (if (nil? v)
+    :string
+    (condp instance? v
+        String :string
+        Long :long
+        Integer :int
+        Short :short
+        Double :double
+        Float :float
+        Boolean :boolean
+        :string
+      )))
+
 (defn convert-message [^Message msg]
   (if (some? msg)
     (let [^String text (get-message-body msg)
@@ -81,7 +95,7 @@
                :headers          (into [] (for [property-name (enumeration-seq (.getPropertyNames msg))]
                                             {:name  property-name
                                              :value (.getStringProperty msg property-name)
-                                             :type  :string}))}]
+                                             :type  (get-type (.getObjectProperty msg property-name))}))}]
       ;(println "message! " res)
       res)))
 
@@ -106,8 +120,8 @@
                    :int (.setIntProperty mq-message name (safe-to-int value))
                    :short (.setShortProperty mq-message name (safe-to-short value))
                    :double (.setDoubleProperty mq-message name (safe-to-double value))
-                   :float (.setShortProperty mq-message name (safe-to-float value))
-                   :boolean (.setShortProperty mq-message name (safe-to-boolean value)))))))
+                   :float (.setFloatProperty mq-message name (safe-to-float value))
+                   :boolean (.setBooleanProperty mq-message name (safe-to-boolean value)))))))
     (.setText mq-message (:long-title message))
     mq-message))
 
