@@ -8,7 +8,7 @@ This tool intended to work with JMS :
 
 - observe queue messages
  
-<img src="/readme-ext/main-window.png" width="500" height="300" />
+<img src="/readme-ext/main-window.png" width="900" height="450" />
 
 ##Installation
 
