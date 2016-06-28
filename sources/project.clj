@@ -31,6 +31,7 @@
                  [org.apache.activemq/activemq-client "5.13.2"]
                  [org.fusesource.stompjms/stompjms-client "1.19"]
                  [org.apache.qpid/qpid-jms-client "0.9.0"]
+                 [org.apache.activemq/artemis-jms-client "1.3.0"]
                  ]
 
   :plugins [[lein-environ "1.0.0"]

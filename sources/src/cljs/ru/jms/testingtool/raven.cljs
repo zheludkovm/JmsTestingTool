@@ -1,4 +1,4 @@
-(ns ru.jms.testingtool.utils.raven
+(ns ru.jms.testingtool.raven
   (:require [reagent.core :as reagent :refer [atom]]))
 
 

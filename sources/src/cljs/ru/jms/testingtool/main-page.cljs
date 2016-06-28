@@ -12,7 +12,7 @@
             [reagent-modals.modals :as reagent-modals]
             [ru.jms.testingtool.timer :as timer]
             [ru.jms.testingtool.shared.model :as m]
-            [ru.jms.testingtool.utils.raven :as notify]))
+            [ru.jms.testingtool.raven :as notify]))
 
 
 (defn check-queue-selection? []

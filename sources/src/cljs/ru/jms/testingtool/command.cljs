@@ -4,7 +4,7 @@
             [ru.jms.testingtool.dispatcher :refer [send-command! process-client-command]]
             [ru.jms.testingtool.shared.model :as m]
             [com.rpl.specter :as s]
-            [ru.jms.testingtool.utils.raven :as notify]
+            [ru.jms.testingtool.raven :as notify]
             ))
 
 (declare browse-queue!)

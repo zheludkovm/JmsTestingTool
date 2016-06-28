@@ -38,6 +38,16 @@
                                :init-calls             {
                                                         "setRemoteURI" [remoteURI]
                                                         }})}
+
+   :artemis {:title       "Artemis"
+               :comment     "Artemis 1.3 client"
+               :browse-type :browser
+               :fields      [{:name "remote URI (tcp://host:port)" :field :remoteURI :type :string :not-null true}]
+               :init-fn     (fn [{remoteURI :remoteURI }]
+                              {:class                  "org.apache.activemq.artemis.jms.client.ActiveMQConnectionFactory"
+                               :constructor-parameters [remoteURI]
+                               :init-calls             {}})}
+
    :mq-series {:title       "IBM MQ"
                :comment     "IBM MQ Series"
                :browse-type :browser
