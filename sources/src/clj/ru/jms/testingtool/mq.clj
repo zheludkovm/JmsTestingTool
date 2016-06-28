@@ -85,7 +85,7 @@
                :jmsMessageId     (.getJMSMessageID msg)
                :type             :string
                :short-title      (subs text2 0 (min 100 text-len))
-               :long-title       (subs text2 0 (min 8000 text-len))
+               :long-title       (subs text2 0 (min 32000 text-len))
                :size             text-len
                :jmsCorrelationId (.getJMSCorrelationID msg)
                :jmsExpiration    (.getJMSExpiration msg)
