@@ -1,1 +1,1 @@
-java -cp .;lib/jms-testing-tool.jar;lib-ext/* ru.jms.testingtool.server
+java -cp .;lib/jms-testing-tool.jar;lib-ext/* -Dfile.encoding=utf-8 ru.jms.testingtool.server
