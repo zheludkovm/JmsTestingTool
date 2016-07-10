@@ -45,9 +45,8 @@
 (defn select-message-func [id-msg checked-set]
   #(comm/exec-client :check-message :message-id id-msg :checked-set checked-set))
 
-(defn make-message-checkbox [id-msg checked-set]
-  (let [checked (contains? (checked-set @data/web-data) id-msg)]
-    [:span {:class (if checked "glyphicon glyphicon-check" "glyphicon glyphicon-unchecked")}]))
+(defn make-message-checkbox [row-checked]
+  [:span {:class (if row-checked "glyphicon glyphicon-check" "glyphicon glyphicon-unchecked")}])
 
 (defn collections-combo [on-change-fn value-fn]
   [:select.form-control {:on-change on-change-fn
@@ -200,10 +199,11 @@
       [:label.col-sm-1.control-label (name type)])]))
 
 (defn table-row-collapsed [id-msg msg]
-  (let [select-msg-props {:on-click (select-message-func id-msg :checked-collections-messages)}]
+  (let [select-msg-props {:on-click (select-message-func id-msg :checked-collections-messages)}
+        row-checked (data/row-checked? id-msg)]
     ^{:key id-msg}
-    [:tr
-     [:td.col-md-1 select-msg-props [make-message-checkbox id-msg :checked-collections-messages]]
+    [:tr {:class (if row-checked "active" "")}
+     [:td.col-md-1 select-msg-props [make-message-checkbox row-checked]]
      [:td.col-md-1 select-msg-props (:short-title msg)]
      [:td.col-md-1 select-msg-props (name (:type msg))]
      [:td.col-md-1 (row-expand-button id-msg :expanded-collection-messages)]]))
@@ -230,10 +230,11 @@
    [:textarea.form-control {:rows " 4 " :disabled " disabled " :value (:long-title msg)}]])
 
 (defn collection-row-expanded [id-msg msg]
-  (let [select-msg-f (select-message-func id-msg :checked-collections-messages)]
+  (let [select-msg-f (select-message-func id-msg :checked-collections-messages)
+        row-checked (data/row-checked? id-msg)]
     ^{:key id-msg}
-    [:tr
-     [:td {:on-click select-msg-f} (make-message-checkbox id-msg :checked-collections-messages)]
+    [:tr {:class (if row-checked "active" "")}
+     [:td {:on-click select-msg-f} (make-message-checkbox row-checked)]
      [:td {:col-span 2 :on-click select-msg-f}
       (standard-expanded-part id-msg msg [gen-property " title " (:short-title msg) nil])]
      [:td

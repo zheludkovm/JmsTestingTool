@@ -193,6 +193,9 @@
     (if (not-empty remove-msg-list)
       (swap! web-data update :expanded-collection-messages set/difference remove-msg-list))))
 
+(defn row-checked?[id-msg]
+  (contains? (:checked-collections-messages @web-data) id-msg))
+
 (defn check-all! []
   (check-selection!)
   (check-expanded!))
