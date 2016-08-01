@@ -4,19 +4,25 @@
            (java.io IOException))
   (:use ru.jms.testingtool.mq-init))
 
+(defn ^Connection get-connection [connection-info]
+  (try
+    (let [^QueueConnectionFactory qcf (create-qcf connection-info)
+          ^Connection q (if (clojure.string/blank? (:user connection-info))
+                          (.createConnection qcf)
+                          (.createConnection qcf (:user connection-info) (:password connection-info)))
+          _ (.start q)]
+      q)
+    (catch Exception e
+      (throw (IOException. e)))))
+
 (defn ^Session get-session
-  ([connection-info ack-mode]
+  ([^Connection c ack-mode]
    (try
-     (let [^QueueConnectionFactory qcf (create-qcf connection-info)
-           ^Connection q (if (clojure.string/blank? (:user connection-info))
-                           (.createConnection qcf)
-                           (.createConnection qcf (:user connection-info) (:password connection-info)))
-           _ (.start q)]
-       (.createSession q false ack-mode))
+       (.createSession c false ack-mode)
      (catch Exception e
        (throw (IOException. e)))))
-  ([connection-info]
-   (get-session connection-info Session/AUTO_ACKNOWLEDGE)))
+  ([^Connection c ]
+   (get-session c Session/AUTO_ACKNOWLEDGE)))
 
 
 (defn ^Queue get-queue [^Session s queue-info]
@@ -62,18 +68,18 @@
                                    )
     :else (throw (IOException. (str "Not supported message class!" (.getClass msg))))))
 
-(defn get-type[v]
+(defn get-type [v]
   (if (nil? v)
     :string
     (condp instance? v
-        String :string
-        Long :long
-        Integer :int
-        Short :short
-        Double :double
-        Float :float
-        Boolean :boolean
-        :string
+      String :string
+      Long :long
+      Integer :int
+      Short :short
+      Double :double
+      Float :float
+      Boolean :boolean
+      :string
       )))
 
 (defn convert-message [^Message msg]
@@ -130,17 +136,20 @@
        (take-while some?)))
 
 (defn consume-queue [connection-info queue-info]
-  (let [^Session s (get-session connection-info Session/CLIENT_ACKNOWLEDGE)
+  (let [^Connection c (get-connection connection-info)
+        ^Session s (get-session c Session/CLIENT_ACKNOWLEDGE)
         ^Queue q (get-queue s queue-info)
         ^MessageConsumer consumer (.createConsumer s q)
         messages (get-all consumer)
         converted-messages (doall (map convert-message messages))]
     (.close consumer)
     (.close s)
+    (.close c)
     (doall converted-messages)))
 
 (defn browse-queue [connection-info queue-info]
-  (let [^Session s (get-session connection-info)
+  (let [^Connection c (get-connection connection-info)
+        ^Session s (get-session c)
         ^Queue q (get-queue s queue-info)
         ^QueueBrowser browser (.createBrowser s q)
         ^Enumeration msgs-e (.getEnumeration browser)
@@ -150,6 +159,7 @@
                                     ))]
     (.close browser)
     (.close s)
+    (.close c)
     converted-messages))
 
 (defn browse-queue-messages [connection-info queue-info]
@@ -162,19 +172,25 @@
       (browse-queue connection-info queue-info))))
 
 (defn send-messages! [connection-info queue-info messages]
-  (let [^Session s (get-session connection-info)
+  (let [^Connection c (get-connection connection-info)
+        ^Session s (get-session c)
         ^Queue q (get-queue s queue-info)
         ^MessageProducer producer (.createProducer s q)]
     (doall (for [message messages
                  :let [mq-message (convert-message-to-mq s message)]]
              (.send producer mq-message)))
     (.close producer)
-    (.close s)))
+    (.close s)
+    (.close c)
+    ))
 
 (defn purge-queue! [connection-info queue-info]
-  (let [^Session s (get-session connection-info)
+  (let [^Connection c (get-connection connection-info)
+        ^Session s (get-session c)
         ^Queue q (get-queue s queue-info)
         ^MessageConsumer consumer (.createConsumer s q)]
     (doall (get-all consumer))
     (.close consumer)
-    (.close s)))
+    (.close s)
+    (.close c)
+    ))
