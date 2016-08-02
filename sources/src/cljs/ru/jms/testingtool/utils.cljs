@@ -110,8 +110,9 @@
                 :double #"[0-9]{1,13}(\.[0-9]*)?"
                 :float #"[0-9]{1,13}(\.[0-9]*)?"
                 :boolean #"false|true|FALSE|TRUE"
-                #".*")]
-      (or (and not-null? (empty? value)) (not (re-matches reg value))))))
+                #".*")
+          value-str (if (nil? value) "" value)]
+      (or (and not-null? (empty? value)) (not (re-matches reg value-str))))))
 
 
 (defn show-confirm-dialog [message command]

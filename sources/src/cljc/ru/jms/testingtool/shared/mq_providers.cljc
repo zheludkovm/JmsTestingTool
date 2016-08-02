@@ -22,11 +22,15 @@
                :comment     "Fuse jms stomp provider"
                :browse-type :consumer
                :fields      [{:name "host" :field :host :type :string :not-null true}
-                             {:name "port" :field :port :type :int :not-null true}]
-               :init-fn     (fn [{host :host port :port}]
+                             {:name "port" :field :port :type :int :not-null true}
+                             {:name "queue prefix" :field :queue-prefix :type :string :not-null false}
+                             ]
+               :init-fn     (fn [{host :host port :port queue-prefix :queue-prefix}]
                               {:class                  "org.fusesource.stomp.jms.StompJmsConnectionFactory"
                                :constructor-parameters []
-                               :init-calls             {"setBrokerURI" [(str "tcp://" host ":" port)]}})}
+                               :init-calls             {"setBrokerURI" [(str "tcp://" host ":" port)]
+                                                        "setQueuePrefix" [(if (clojure.string/blank? queue-prefix) "/queue/" queue-prefix ) ]
+                                                        }})}
 
    :amqp {:title       "AMQP"
                :comment     "AMQP QPID client"
